@@ -1,0 +1,309 @@
+<?php
+
+define("APP_PATH", dirname(__FILE__));
+require_once __DIR__ . '/vendor/autoload.php';
+
+$config = new NhatHoa\Framework\Factories\ConfigFactory(array(
+    "type" =>"ini"
+));
+
+NhatHoa\Framework\Registry::set("config", $config->initialize());
+
+$database = new NhatHoa\Framework\Factories\DatabaseFactory();
+
+NhatHoa\Framework\Registry::set("database", $database->initialize());
+
+use NhatHoa\Framework\Registry;
+
+$command = $argv[1] ?? "";
+
+switch($command)
+{
+    case "make:migration":
+        if(isset($argv[2])){
+            if(!preg_match("/^create_(.+)_table$/",$argv[2]))
+            {
+                return;
+            }
+            $time = explode(" ",microtime())[0];
+            $time = explode(".", $time)[1];
+            $time = substr($time,0,6);
+            $table = preg_replace('/^create_(.+)_table$/', '$1', $argv[2]);
+            $str = <<<EOD
+            <?php
+            use NhatHoa\Framework\Database\Connector;
+
+            return new class
+            {
+                /**
+                 * Run the migrations.
+                 */
+                public function up(Connector \$connector): void
+                {
+                    \$sql = "CREATE TABLE IF NOT EXISTS $table (
+                        id INT AUTO_INCREMENT PRIMARY KEY
+                    )";
+                    \$connector->exec(\$sql);
+                }
+
+                /**
+                 * Reverse the migrations.
+                 */
+                public function down(Connector \$connector): void
+                {
+                    \$sql = "DROP TABLE IF EXISTS $table";
+                    \$connector->exec(\$sql);
+                }
+            };
+            EOD;
+            file_put_contents("migration/" . date("Y_m_d") . "_" . $time . "_" . $argv[2] . ".php", $str);
+        }
+        break;
+    case "migrate":
+        $connector = Registry::get("database")->connect();
+        $sql = "CREATE TABLE IF NOT EXISTS migrations (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            migration VARCHAR(255),
+            batch INT
+        )";
+        $connector->exec($sql);
+        $migrations_from_dir = scandir("migration");
+        $migrations_from_db = $connector->query()->from("migrations")->select(["migration"])->getArray("migration");
+        $migrations = array_diff($migrations_from_dir,$migrations_from_db);
+        $migrations = array_filter($migrations,fn($item) => $item !== "." && $item !== "..");
+        if(count($migrations) === 0)
+        {
+            echo "nothing to migrate";
+            exit;
+        }
+        $last_migration = $connector->query()->from("migrations")->limit(1)->orderBy("id","desc")->first();
+        if(!$last_migration)
+        {
+            $batch = 1;
+        }else{
+            $batch = $last_migration->batch + 1;
+        }
+        foreach($migrations as $item)
+        {
+            echo "running migration - $item \n";
+            $class = require_once "migration/$item"; 
+            $class->up($connector);
+            $connector->query()->from("migrations")->insert([
+                "migration" => $item,
+                "batch" => $batch
+            ]);
+            echo "migrated \n";
+        }
+        break;
+    case "migrate:back":
+        $connector = Registry::get("database")->connect();
+        $last_migration = $connector->query()->from("migrations")->limit(1)->orderBy("id","desc")->first();
+        if(!$last_migration)
+        {
+            echo "nothing to back";
+            return;
+        }
+        $batch = $last_migration->batch;
+        $query = $connector->query()->from("migrations")->select(["migration"]);
+        $step = 1;
+        if(isset($argv[2]) && is_numeric($argv[2]) && (int) $argv[2] > 1)
+        {
+            $step = $argv[2];
+        }
+        if($step >= 2)
+        {
+            if($step > $batch)
+            {
+                $step = $batch;
+            }
+            $stop = $batch - $step;
+            for($i=$batch;$i>$stop;$i--)
+            {
+                $query->orWhere("batch",$i);
+            }
+        }else
+        {
+            $query->where("batch",$batch);
+        }
+        $migration_to_back = $query->getArray("migration");
+        foreach($migration_to_back as $item)
+        {
+            echo "backing migration - $item \n";
+            $class = require_once "migration/$item"; 
+            $class->down($connector);
+            $connector->query()->from("migrations")->where("migration",$item)->limit(1)->delete();
+            echo "backed \n";
+        }
+        break;   
+    case "make:controller":
+        if(isset($argv[2]))
+        {
+            $controller_name = $argv[2];
+            if(!preg_match("/^[a-zA-Z0-9]+Controller$/",$controller_name))
+            {
+                echo "Controller name is not valid";
+                return;
+            }
+            $str = <<<EOD
+            <?php
+
+            namespace NhatHoa\App\Controllers;
+            use NhatHoa\Framework\Core\Request;
+            use NhatHoa\Framework\Abstract\Controller;
+            use NhatHoa\App\Models\ModelName;
+            
+            class $controller_name extends Controller
+            {
+                protected \$nameModel;
+
+                public function __construct(ModelName \$model)
+                {
+                    \$this->nameModel = \$model;
+                }
+
+                public function index()
+                {
+                    
+                }
+
+                public function add(Request \$request)
+                {
+                    
+                }
+
+                public function edit(\$id)
+                {
+                    
+                }
+
+                public function update(Request \$request,\$id)
+                {
+                    
+                }
+
+                public function delete(\$id)
+                {
+                    
+                }
+            }
+            EOD;
+            file_put_contents("application/Controllers/" . $controller_name . ".php", $str);
+        }
+        break;
+    case "make:model":
+        if(isset($argv[2]))
+        {
+            $model_name = $argv[2];
+            $str = <<<EOD
+            <?php
+            
+            namespace NhatHoa\App\Models;
+            use NhatHoa\Framework\Abstract\Model;
+
+            class $model_name extends Model
+            {
+
+                
+            }
+            EOD;
+            file_put_contents("application/Models/" . $model_name . ".php", $str);
+        }
+        break;
+    case "make:service":
+        if(isset($argv[2]))
+        {
+            $service_name = $argv[2];
+            if(!preg_match("/^[a-zA-Z0-9]+Service$/",$service_name))
+            {
+                echo "Service name is not valid";
+                return;
+            }
+            $str = <<<EOD
+            <?php
+
+            namespace NhatHoa\App\Services;
+            use NhatHoa\Framework\Abstract\Service;
+            
+            class $service_name extends Service
+            {
+
+
+            }
+            EOD;
+            file_put_contents("application/Services/" . $service_name . ".php", $str);
+        }
+        break;
+    case "make:middleware":
+        if(isset($argv[2]) && !empty($argv[2]))
+        {
+            $middleware_name = $argv[2];
+            $str = <<<EOD
+            <?php
+
+            namespace NhatHoa\App\Middlewares;
+            use NhatHoa\Framework\Abstract\Middleware;
+            use NhatHoa\Framework\Core\Request;
+            
+            class $middleware_name implements Middleware
+            {
+                public function handle(Request \$request)
+                {
+                    return \$request;
+                }
+            }
+            EOD;
+            file_put_contents("application/Middlewares/" . $middleware_name . ".php", $str);
+        }
+        break;
+    case "test":
+        $result = require_once __DIR__ . "/application/UnitTest.php";
+        break;
+    case "cache":
+        /**
+         * cache router
+         */
+        $router = new NhatHoa\Framework\Core\Router();
+        require_once __DIR__ . "/routes.php";
+        $cachedRouter = serialize($router);
+        if(!file_exists("application/cache")){
+            mkdir("application/cache");
+        }
+        $content = <<<EOD
+            <?php
+
+            return '$cachedRouter';
+           
+            EOD;
+        file_put_contents("application/cache/router.php",$content);
+        /**
+         * cache authorizations
+         */
+        $authorization = new NhatHoa\Framework\Core\Authorization();
+        NhatHoa\Framework\Registry::set("authorization", $authorization);
+        require_once __DIR__ . '/application/Auths.php';
+        $cachedAuth = serialize($auth);
+        if(!file_exists("application/cache")){
+            mkdir("application/cache");
+        }
+        $content = <<<EOD
+            <?php
+
+            return '$cachedAuth';
+           
+            EOD;
+        file_put_contents("application/cache/auth.php",$content);
+        break;
+    case "cache:clear":
+        $dir = __DIR__ . '/application/cache';
+        $it = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
+        $files = new RecursiveIteratorIterator($it,
+                    RecursiveIteratorIterator::CHILD_FIRST);
+        foreach($files as $file) {
+            if ($file->isDir()){
+                rmdir($file->getPathname());
+            } else {
+                unlink($file->getPathname());
+            }
+        }
+        rmdir($dir);
+}

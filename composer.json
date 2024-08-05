@@ -1,0 +1,22 @@
+{
+  "name": "nhathoa/framework",
+  "autoload": {
+    "psr-4": {
+      "NhatHoa\\Framework\\": "framework/",
+      "NhatHoa\\App\\": "application/"
+    }
+  },
+  "authors": [
+    {
+      "name": "nhathoa",
+      "email": "nhathoa512@gmail.com"
+    }
+  ],
+  "require": {
+    "predis/predis": "^2.2",
+    "ramsey/uuid": "^4.7",
+    "phpmailer/phpmailer": "^6.9",
+    "phpoffice/phpspreadsheet": "^2.1",
+    "dompdf/dompdf": "^3.0"
+  }
+}
