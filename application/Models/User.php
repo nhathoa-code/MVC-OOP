@@ -122,22 +122,24 @@ class User extends Model
 
     public function countOrders($status = "")
     {
+        $where = array("user_id"=>$this->id);
+        if(!empty($status)){
+            $where["status"] = $status;
+        }
         return $this->count(
             table:"orders",
-            where:array(
-                "user_id"=>$this->id,
-                "status"=>$status
-            )
+            where:$where
         );
     }
 
     public function getOrders($status = "")
     {
-        return $this->table("orders")
-            ->where("user_id",$this->id)
-            ->where("status",$status)
-            ->orderBy("created_at","desc")
-            ->get();
+        $query = $this->table("orders")
+                ->where("user_id",$this->id);
+        if(!empty($status)){
+            $query->where("status",$status);
+        } 
+        return $query->orderBy("created_at","desc")->get();
     }
 
     public function getOrder($order_id)

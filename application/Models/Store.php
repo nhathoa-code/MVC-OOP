@@ -281,9 +281,21 @@ class Store extends Model
             $stock = $validated["stock_of_product_{$product_id}"];
             $price = $validated["price_of_product_{$product_id}"];
             if($this->checkProductExists($product_id)){
-                
+                $this->table("inventory")
+                    ->where("store_id",$this->id)
+                    ->where("product_id",$product_id)
+                    ->update([
+                        "stock" => $stock,
+                        "price" => $price
+                    ]);
             }else{
-
+                $this->table("inventory")
+                    ->insert([
+                        "product_id" => $product_id,
+                        "store_id" => $this->id,
+                        "stock" => $stock,
+                        "price" => $price
+                    ]);
             }
         }
     }
