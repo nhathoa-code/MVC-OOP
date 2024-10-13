@@ -4,44 +4,7 @@ namespace NhatHoa\App\Models;
 use NhatHoa\Framework\Abstract\Model;
 
 class Coupon extends Model
-{
-    public function getList()
-    {
-        return $this->all(orderBy:array("id"=>"desc"));
-    }
-
-    public function getCoupon($id)
-    {
-        return $this->first(where:array("id" => $id));   
-    }
-
-    public function getCouponByCode($code)
-    {
-        return $this->first(where:array("code"=>$code));
-    }
-
-    public function saveCoupon($validated)
-    {
-        $this->code = $validated["code"];
-        $this->amount = $validated["amount"];
-        $this->minimum_spend = $validated["minimum_spend"];
-        $this->coupon_usage = $validated["usage"];
-        $this->per_user = $validated["per_user"];
-        $this->start_time = \DateTime::createFromFormat("d-m-Y H:i", $validated["start_time"])->format("Y-m-d H:i");
-        $this->end_time = \DateTime::createFromFormat("d-m-Y H:i", $validated["end_time"])->format("Y-m-d H:i");
-        $this->save();
-    }
-
-    public function updateCoupon($validated)
-    {
-        $this->saveCoupon($validated);
-    }
-    
-    public function deleteCoupon($id)
-    {
-        $this->first(where:array("id" => $id))->delete();
-    }
-
+{    
     public function insertUsageHistory($user_id,$order_id)
     {
         $this->table("coupon_usage")->insert([

@@ -97,20 +97,20 @@ if (typeof product_detail !== "undefined") {
                     <div class="name">${res.item.p_name}</div>
                     <div class="variation d-flex">
                         ${
-                          res.item.hasOwnProperty("color_id")
+                          res.item.color_id
                             ? `<div class="color d-flex align-items-center">
                             <img src="${res.item.color_image}" alt="">
                             <span class="ms-1">${res.item.color_name}</span>
                         </div>
                         ${
-                          res.item.hasOwnProperty("size")
+                          res.item.size
                             ? '<div class="vr mx-1 mx-1"></div>'
                             : ""
                         }`
                             : ""
                         }
                         ${
-                          res.item.hasOwnProperty("size")
+                          res.item.size
                             ? `<div class="size">${res.item.size}</div>`
                             : ""
                         }
@@ -377,7 +377,11 @@ $(".toggle-qty").click(function () {
     contentType: false,
     success: function (res) {
       $(`#cart-table #cart-body .cart-qty-${res.index}`).val(res.quantity);
+      $(`#mini-cart .cart-qty-${res.index}`).text(res.quantity);
       $("#cart-subtotal #number").text(
+        new Intl.NumberFormat({ style: "currency" }).format(res.subtotal) + "đ"
+      );
+      $(`#mini-cart .mini-number`).text(
         new Intl.NumberFormat({ style: "currency" }).format(res.subtotal) + "đ"
       );
       $("#cart-header .number").text(res.totalItems);

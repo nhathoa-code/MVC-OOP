@@ -51,9 +51,7 @@ class CartController extends Controller
         ]);
         $sign = $validated["sign"];
         $index = $validated["index"];
-        if(!$request->session()->get("cart=>{$index}")){
-            return;
-        }
+        if(!$request->session()->get("cart=>{$index}")) return;
         $array = $this->cartService->updateItem($sign,$index);
         if(isset($array["status"]) && $array["status"] === false){
             return response()->json($array["message"],400);

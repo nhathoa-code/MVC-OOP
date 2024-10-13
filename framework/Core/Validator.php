@@ -378,7 +378,7 @@ class Validator extends Base
         });
     }
 
-    protected function _distinct($field,$constraints)
+    protected function _distinct($field)
     {
         $rule_message = array(
             "rule" => "unique",
@@ -478,8 +478,7 @@ class Validator extends Base
                 $errors = $rule_message['message'];
             }
         }
-        if(!empty($errors))
-        {
+        if(!empty($errors)){
             if(strpos($field,".")){
                 $ref = &$this->_errors;
                 $parts = explode(".",$field);
