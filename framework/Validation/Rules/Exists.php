@@ -18,7 +18,6 @@ class Exists implements Rule
 
     public function validate(Validator $validator, $field = null)
     {
-        $validator->_unique($field,$this->_constraints,$this->_query);
         $rule_message = array(
             "rule" => "exists",
             "message" => "Giá trị không tồn tại !"

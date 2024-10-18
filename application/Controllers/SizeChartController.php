@@ -3,26 +3,24 @@
 namespace NhatHoa\App\Controllers;
 use NhatHoa\Framework\Core\Request;
 use NhatHoa\Framework\Abstract\Controller;
-use NhatHoa\App\Models\SizeChart;
+use NhatHoa\App\Repositories\Interfaces\SizeChartRepositoryInterface;
 
 class SizeChartController extends Controller
 {
-    protected $sizeChartModel;
+    protected $sizeChartRepository;
 
-    public function __construct(SizeChart $size_chart)
+    public function __construct(SizeChartRepositoryInterface $sizeChartRepository)
     {
-        $this->sizeChartModel = $size_chart;
+        $this->sizeChartRepository = $sizeChartRepository;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $limit = 5;
-        $page = get_query("page");
-        $page = ($page && is_numeric($page)) ? $page : 1;
-        $keyword = get_query("keyword") ?? null;
-        list($size_charts,$number_of_size_charts) = $this->sizeChartModel->getList($page,$limit,$keyword);
-        $totalPages = ceil($number_of_size_charts / $limit);
-        return view("admin/size_chart/index",array("size_charts" => $size_charts,"totalPages"=>$totalPages,"currentPage"=>$page));
+        $page = max((int) $request->query("page"),1);
+        $keyword = $request->query("keyword"); 
+        list($size_charts,$number_of_size_charts) = $this->sizeChartRepository->getAll($page,5,$keyword);
+        $totalPages = ceil($number_of_size_charts / 5);
+        return view("admin/size_chart/index",array("size_charts"=>$size_charts,"totalPages"=>$totalPages,"currentPage"=>$page));
     }
 
     public function addView()
@@ -36,17 +34,15 @@ class SizeChartController extends Controller
             "name" => "bail|required|unique:size_charts",
             "size-chart" => "bail|required|json"
         ]);
-        $this->sizeChartModel->saveSizeChart($validated);
+        $this->sizeChartRepository->create($validated);
         return response()->flash("success","Tạo bảng kích cỡ thành công")
                         ->json(["back"=>url("admin/size-chart")]);
     }
 
     public function edit($id)
     {
-        $size_chart = $this->sizeChartModel->getSizeChart($id);
-        if(!$size_chart){
-            return;
-        }
+        $size_chart = $this->sizeChartRepository->getById($id);
+        if(!$size_chart) return;
         return view("admin/size_chart/edit",array("size_chart"=>$size_chart));
     }
 
@@ -56,19 +52,17 @@ class SizeChartController extends Controller
             "name" => "bail|required|unique:size_charts,name,$id",
             "size-chart" => "bail|required|json"
         ]);
-        $size_chart = $this->sizeChartModel->first(where:array("id" => $id));
-        if(!$size_chart){
-            return;
-        }
-        $size_chart->updateSizeChart($validated);
+        $size_chart = $this->sizeChartRepository->getById($id);
+        if(!$size_chart) return;
+        $this->sizeChartRepository->update($size_chart,$validated);
         return response()->json(["message"=>"Cập nhật bảng kích cỡ thành công"]);
     }
 
     public function delete($id)
     {
-        $size_chart = $this->sizeChartModel->first(where:array("id"=>$id));
+        $size_chart = $this->sizeChartRepository->getById($id);
         if($size_chart){
-            $size_chart->deleteSizeChart();
+            $this->sizeChartRepository->delete($size_chart);
         }
         return response()->back()->with("success","Xóa bảng kích cỡ thành công");
     }

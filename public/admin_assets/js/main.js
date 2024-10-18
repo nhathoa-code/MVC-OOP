@@ -373,7 +373,7 @@ if (typeof admin !== "undefined") {
 
   $("#date-picker").datepicker({
     dateFormat: "dd/mm/yy",
-    onSelect: function (dateText, inst) {
+    onSelect: function () {
       let dateAsObject = $(this).datepicker("getDate");
       let date = formatDate(dateAsObject);
       $.ajax({
@@ -384,7 +384,6 @@ if (typeof admin !== "undefined") {
         },
         success: function (res) {
           data = res.data;
-          console.log(data);
           const dataOrders = [];
           const dataSubtotal = [];
           for (let i = 0; i < 24; i++) {
@@ -409,7 +408,7 @@ if (typeof admin !== "undefined") {
   const dataOrders = [];
   const dataSubtotal = [];
   for (let i = 0; i < 24; i++) {
-    let ob = x.find((item) => item.hour === i);
+    let ob = orders_statistics.find((item) => item.hour === i);
     if (ob) {
       dataOrders.push(ob.total_orders);
       dataSubtotal.push(Number(ob.total));
@@ -505,7 +504,6 @@ if (typeof admin !== "undefined") {
                 },
                 success: function (res) {
                   data = res.data;
-                  console.log(data);
                   const dataOrders = [];
                   const dataSubtotal = [];
                   for (let i = 0; i < 24; i++) {
@@ -699,7 +697,6 @@ if (typeof admin !== "undefined") {
                   },
                   success: function (res) {
                     let data = res.data;
-                    console.log(data);
                     const dataOrders = [];
                     const dataSubtotal = [];
                     const labels = [];
@@ -760,7 +757,6 @@ if (typeof admin !== "undefined") {
 if (typeof add_user !== "undefined") {
   $("select[id=role]").change(function () {
     let value = $(this).val();
-    console.log(value);
     if (value == "user") {
       $(this).removeAttr("name");
     } else {

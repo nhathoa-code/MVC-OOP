@@ -271,7 +271,8 @@ $("form#inventory").on("submit", function (event) {
     success: function (response) {
       window.window.location.href = response.back_url;
     },
-    error: function () {
+    error: function (err) {
+      console.log(err);
       notif({
         msg: "Có lỗi xảy ra, vui lòng kiểm tra và thử lại",
         type: "warning",

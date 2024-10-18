@@ -1,14 +1,19 @@
 <?php include(APP_PATH . "/application/Views/client/header.php") ?>
     <section id="banner">
-        <div class="container-fluid">
+        <div id="banner-slider" class="container-fluid">
             <div class="d-block">
                 <a href="">
-                    <img src="<?php echo url("client_assets/images/WebBanner.jpg") ?>" alt="">
+                    <img src="https://down-bs-vn.img.susercontent.com/vn-11134210-7ras8-m0ttyugzd66n3d.webp" alt="">
+                    <!-- <img src="<?php echo url("client_assets/images/WebBanner.jpg") ?>" alt=""> -->
+                </a>       
+            </div>
+            <div class="d-block">
+                <a href="">
+                    <img src="https://down-bs-vn.img.susercontent.com/vn-11134210-7ras8-m0ttyugzekr32f.webp" alt="">
                 </a>       
             </div>
         </div>
     </section>         
-
     <section id="product-categories" class="mt-5">
         <div class="container-fluid">
             <h2 class="collection-title">Danh mục</h2>
@@ -26,7 +31,6 @@
             </div>
         </div>
     </section>
-
     <section id="latest-products" class="collection-content mt-5">
         <div class="container-fluid">
             <h2 class="collection-title">Bán chạy</h2>
@@ -78,7 +82,6 @@
             </div>
         </div>
     </section>
-
     <section id="latest-products" class="collection-content mt-5">
         <div class="container-fluid">
             <h2 class="collection-title">Mới nhất</h2>
@@ -130,4 +133,7 @@
             </div>
         </div>
     </section>
+    <script>
+        const main = true;
+    </script>
 <?php include(APP_PATH . "/application/Views/client/footer.php") ?>

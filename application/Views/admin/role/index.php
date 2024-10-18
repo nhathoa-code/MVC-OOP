@@ -37,10 +37,17 @@
                         <td>
                             <div>
                                 <?php
-                                    echo join(", ",array_map(function($item){
-                                        return $item->name;
-                                    },$item->permissions));
+                                    $lastIndex = count($item->permissions);
+                                    $startIndex = 0;
+                                    foreach($item->permissions as $resource => $permissions):
+                                    $startIndex++;
                                 ?>
+                                    <span style="font-weight: bold;"><?php echo $resource . ":"  ?></span>
+                                    <?php echo join("-",$permissions); ?>
+                                    <?php if($startIndex !== $lastIndex): ?>
+                                        <?php echo "|"; ?>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
                             </div>
                         </td>
                     </tr>

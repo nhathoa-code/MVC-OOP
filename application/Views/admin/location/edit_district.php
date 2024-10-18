@@ -13,7 +13,8 @@
         animation:'slide'
     });
 </script>
-<?php endif; ?>  
+<?php endif; ?>
+<?php if($district): ?>
 <div class="heading">Sửa quận/huyện - Tỉnh/thành: <?php echo $province->name; ?></div>
 <form id="update-cat-form" method="POST" action="<?php echo url("admin/location/province/{$province->id}/district/{$district->id}/update") ?>">
     <div class="row mb-5">
@@ -34,4 +35,5 @@
     </div>
     <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
 </form>
+<?php endif; ?>
 <?php include_once APP_PATH . "/application/Views/admin/footer.php" ?>

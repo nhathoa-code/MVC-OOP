@@ -2,46 +2,12 @@
 
 namespace NhatHoa\App\Models;
 
+use NhatHoa\App\Repositories\Interfaces\ProductRepositoryInterface;
 use NhatHoa\Framework\Abstract\Model;
 use NhatHoa\App\Services\InventoryService;
-use NhatHoa\Framework\Facades\DB;
-use NhatHoa\App\Services\InvoiceService;
 
 class Store extends Model
 {
-    public function getList()
-    {
-        return $this->join("provinces as p","p.id","=",$this->getTable() . ".province_id")
-                ->join("province_districts as pd","pd.id","=",$this->getTable() . ".district_id")
-                ->select(["{$this->getTable()}.*","p.name as province","pd.name as district"])
-                ->get();
-    }
-
-    public function getStore($id)
-    {
-        return $this->first(where:array("id"=>$id));
-    }
-
-    public function saveStore($validated)
-    {
-        $this->name = $validated["name"];
-        $this->address = $validated["address"];
-        $this->coordinates = $validated["coordinates"];
-        $this->province_id = $validated["province_id"];
-        $this->district_id = $validated["district_id"];
-        $this->save();
-    }
-
-    public function updateStore($validated)
-    {
-        $this->saveStore($validated);
-    }
-
-    public function deleteStore()
-    {
-        $this->delete();
-    }
-
     public function saveInventory($validated)
     {
         foreach($validated["products"] as $p_id){
@@ -108,12 +74,12 @@ class Store extends Model
         }
     }
 
-    public function getInventory($currentPage, $limit, $keyword, $all = false)
+    public function getInventory($currentPage, $limit, $keyword, $all = false,ProductRepositoryInterface $productRepository)
     {
         if($all === false){
-            list($products,$number_of_products) = $this->getProducts($currentPage, $limit, $keyword, $all);
+            list($products,$number_of_products) = $this->getProducts($currentPage, $limit, $keyword, $all,$productRepository);
         }else{
-            $products = $this->getProducts($currentPage, $limit, $keyword, $all);
+            $products = $this->getProducts($currentPage, $limit, $keyword, $all,$productRepository);
         }
         foreach($products as $p){
             $p->product_images = getFiles("images/products/{$p->dir}/product_images");
@@ -145,15 +111,15 @@ class Store extends Model
         }
     }
 
-    public function getProducts($currentPage = null, $limit = null, $keyword = null, $all = false)
+    public function getProducts($currentPage = null, $limit = null, $keyword = null, $all = false, ProductRepositoryInterface $productRepository)
     {
         if($all === false){
             list($product_ids,$number_of_products) = $this->getProductsIds($currentPage, $limit, $keyword, $all);
         }else{
             $product_ids = $this->getProductsIds($currentPage, $limit, $keyword, $all);
         }
-        $products = array_map(function($item){
-            return (new Product)->getProduct($item);
+        $products = array_map(function($item) use($productRepository){
+            return $productRepository->getById($item);
         },$product_ids);
         if($all === false){
             return array($products,$number_of_products);
@@ -183,12 +149,10 @@ class Store extends Model
         }
     }
 
-    public function getInventoryProduct($product_id)
+    public function getInventoryProduct($product_id, ProductRepositoryInterface $productRepository)
     {
-        $product = (new Product)->getProduct($product_id);
-        if(!$product){
-            return null;
-        }
+        $product = $productRepository->getById($product_id);
+        if(!$product) return null;
         $product->inventory = $this->table("inventory")
                                 ->where("store_id",$this->id)
                                 ->where("product_id",$product->id)

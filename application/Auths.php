@@ -5,6 +5,7 @@ use NhatHoa\Framework\Registry;
 use NhatHoa\App\Authorizations\CategoryAuth;
 use NhatHoa\App\Authorizations\ProductAuth;
 use NhatHoa\App\Authorizations\CouponAuth;
+use NhatHoa\App\Authorizations\CustomerAuth;
 use NhatHoa\App\Authorizations\InvoiceAuth;
 use NhatHoa\App\Authorizations\OrderAuth;
 use NhatHoa\App\Authorizations\PermissionAuth;
@@ -113,3 +114,14 @@ $auth->for("read-permission",[PermissionAuth::class,"read"]);
 $auth->for("update-permission",[PermissionAuth::class,"update"]);
 
 $auth->for("delete-permission",[PermissionAuth::class,"delete"]);
+
+/**
+ * authorizations for permission resource
+ */
+$auth->for("create-customer",[CustomerAuth::class,"create"]);
+
+$auth->for("read-customer",[CustomerAuth::class,"read"]);
+
+$auth->for("update-customer",[CustomerAuth::class,"update"]);
+
+$auth->for("delete-customer",[CustomerAuth::class,"delete"]);

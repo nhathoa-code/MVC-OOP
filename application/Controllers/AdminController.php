@@ -3,27 +3,28 @@
 namespace NhatHoa\App\Controllers;
 use NhatHoa\Framework\Core\Request;
 use NhatHoa\Framework\Abstract\Controller;
-use NhatHoa\App\Models\User;
-use NhatHoa\App\Models\Order;
 use NhatHoa\App\Models\Product;
 use NhatHoa\App\Models\Category;
+use NhatHoa\App\Repositories\Interfaces\RoleRepositoryInterface;
 use NhatHoa\App\Services\InventoryService;
+use NhatHoa\App\Services\OrderService;
+use NhatHoa\App\Services\UserService;
 use NhatHoa\Framework\Facades\Auth;
 use NhatHoa\Framework\Facades\DB;
 
 class AdminController extends Controller
 {
-    protected $userModel;
+    protected $userService;
 
-    public function __construct(User $user)
+    public function __construct(UserService $userService)
     {
-        $this->userModel = $user;
+        $this->userService = $userService;
     }
 
-    public function index(Order $order,Product $product,Category $category,InventoryService $inventoryService)
+    public function index(OrderService $orderService,Product $product,Category $category,InventoryService $inventoryService)
     {
         $data = array();
-        $data['x'] = DB::table("orders")
+        $data['orders_statistics'] = DB::table("orders")
                         ->select(["HOUR(created_at) as hour","COUNT(*) as total_orders","SUM(total) as total"])
                         ->whereDate("created_at",date('Y-m-d'))
                         ->groupBy("HOUR(created_at)")
@@ -33,16 +34,16 @@ class AdminController extends Controller
                                 ->where("status","!=","cancelled")
                                 ->getValue("total_sales");
         $data["orders"] = array(
-            "all" => $order->countOrders(),
-            "pending" => $order->countOrders("pending"),
-            "toship" => $order->countOrders("toship"),
-            "shipping" => $order->countOrders("shipping"),
-            "completed" => $order->countOrders("completed"),
-            "cancelled" => $order->countOrders("cancelled"),
+            "all" => $orderService->countOrders(),
+            "pending" => $orderService->countOrders("pending"),
+            "toship" => $orderService->countOrders("toship"),
+            "shipping" => $orderService->countOrders("shipping"),
+            "completed" => $orderService->countOrders("completed"),
+            "cancelled" => $orderService->countOrders("cancelled"),
         );
         $data["total_products"] = $product->count();
         $data["total_categories"] = $category->count();
-        $data["top_10_saled_products"] = $order->getTopSaled(20);
+        $data["top_10_saled_products"] = $orderService->getTopSaled(20);
         $threshold = 5;
         $data["out_of_stock_products"] = $inventoryService->getOutOfStock($threshold);
         return view("admin/index",$data);
@@ -57,13 +58,13 @@ class AdminController extends Controller
         return view("admin/login");
     }
 
-    public function login(Request $request)
+    public function login(Request $request,RoleRepositoryInterface $roleRepository)
     {  
         $validated = $request->validate([
             "login_key" => "required",
             "password" => "required"
         ]);
-        $admin = $this->userModel->adminLogin($validated["login_key"],$validated["password"]);
+        $admin = $this->userService->adminLogin($validated["login_key"],$validated["password"],$roleRepository);
         if($admin){
             Auth::login($admin,"admin");
             return redirect("admin");

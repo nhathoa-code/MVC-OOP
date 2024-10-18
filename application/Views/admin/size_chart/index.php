@@ -41,7 +41,7 @@
                         </td>
                         <td>
                             <?php
-                                $size_chart->drawSizeChart();
+                                $size_chart->display();
                             ?>
                         </td>
                     </tr>
