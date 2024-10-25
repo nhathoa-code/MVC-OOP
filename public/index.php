@@ -36,6 +36,8 @@ $response = new NhatHoa\Framework\Core\Response();
 
 NhatHoa\Framework\Registry::set("response", $response);
 
+require_once __DIR__ . '/../application/ServiceContainer.php';
+
 require_once __DIR__ . '/../application/Events.php';
 
 if(!file_exists(__DIR__ . '/../application/cache/auth.php')){

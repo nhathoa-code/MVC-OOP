@@ -3,6 +3,7 @@
 use NhatHoa\Framework\Core\View;
 use NhatHoa\Framework\Facades\Auth;
 use NhatHoa\Framework\Registry;
+use NhatHoa\Framework\Core\Request;
 
 function view($file_path,$data = array())
 {   
@@ -258,6 +259,10 @@ function pagination($totalPages,$currentPage,$maxPagesToShow = 5)
 function abort($code = 401,$message = "Bạn không có quyền này",$headers = []){
     foreach ($headers as $header => $value) {
         header("$header: $value");
+    }
+    $request = new Request();
+    if($request->isAjax()){
+        return response()->json($message,$code);
     }
     http_response_code($code);
     die($message);

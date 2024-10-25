@@ -109,13 +109,9 @@
                 </div>
             </div>
         </div>
-      
-                            
-        <!-- <label for="datepicker">Pick a Date:</label>
-         -->
     </div>
     <script>
-        let x = <?php echo json_encode($x); ?>;
+        const orders_statistics = <?php echo json_encode($orders_statistics); ?>;
         const admin = true;
         const statistical_url = "<?php echo url("admin/statistical") ?>";
     </script>

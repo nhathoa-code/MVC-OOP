@@ -44,17 +44,18 @@
                                                 <p class="name">
                                                     <a href="<?php echo url("product/detail/{$item['p_id']}") ?>"><?php echo $item['p_name'] ?></a>
                                                 </p>
-                                                <ul class="cart-variations">
+                                                <ul class="cart-variations d-flex">
                                                     <?php if(isset($item['size'])): ?>
                                                     <li>
-                                                        <span class="variation">Kích cỡ:</span>
                                                         <span class="value"><?php echo $item['size'] ?></span>
                                                     </li>
+                                                    <?php if(isset($item['color_id'])): ?>
+                                                    <div class="vr mx-1 mx-2"></div>
+                                                    <?php endif; ?>
                                                     <?php endif; ?>
                                                     <?php if(isset($item['color_id'])): ?>
                                                     <li class="d-flex align-items-center">
-                                                        <span class="variation">Màu sắc:</span>
-                                                        <img class="color-image ms-2 me-1" src="<?php echo $item['color_image'] ?>" alt="">
+                                                        <img class="color-image me-1" src="<?php echo $item['color_image'] ?>" alt="">
                                                         <span class="value"><?php echo $item['color_name'] ?></span>
                                                     </li>
                                                     <?php endif; ?>
@@ -65,7 +66,7 @@
                                                 </div>
                                                 <div class="d-flex justify-content-between d-block d-sm-none">
                                                     <div class="cart-item-qty" style="height:30px">
-                                                        <button <?php echo isMobileDevice() ? "style='color:black;width:0px'" : "" ?> data-index="<?php echo $index ?>" data-sign="-" type="button" class="minus toggle-qty d-flex align-items-center justify-content-center">
+                                                        <button <?php echo isMobileDevice() ? "style='color:black;width:0px'" : "" ?> data-index="<?php echo $index ?>" data-sign="-" type="button" class="minus toggle-qty d-flex align-items-center justify-content-center ps-0">
                                                             <span>−</span>
                                                         </button>
                                                         <input disabled value="<?php echo $item['quantity'] ?>" type="text" title="Số lượng" class="input-text qty cart-qty-<?php echo $index ?>">

@@ -5,23 +5,6 @@ use NhatHoa\Framework\Abstract\Model;
 
 class Province extends Model
 {
-
-    public function add($name)
-    {
-        $this->name = $name;
-        $this->save();
-    }
-
-    public function update($name)
-    {
-        $this->add($name);
-    }
-
-    public function deleteProvince()
-    {
-        $this->delete();
-    }
-
     public function getDistricts()
     {
         return $this->table("province_districts")

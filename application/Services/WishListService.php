@@ -19,9 +19,9 @@ class WishListService extends Service
     public function add($p_id)
     {
         $record = $this->_query->from("wish_list")
-                        ->where("user_id",Auth::user()->id)
-                        ->where("p_id",$p_id)
-                        ->first();
+                    ->where("user_id",Auth::user()->id)
+                    ->where("p_id",$p_id)
+                    ->first();
         if(!$record){
             $this->_query->from("wish_list")->insert([
                 "user_id" => Auth::user()->id,
@@ -33,10 +33,10 @@ class WishListService extends Service
     public function remove($p_id)
     {
         $this->_query->from("wish_list")
-                    ->where("user_id",Auth::user()->id)
-                    ->where("p_id",$p_id)
-                    ->limit(1)
-                    ->delete();
+                ->where("user_id",Auth::user()->id)
+                ->where("p_id",$p_id)
+                ->limit(1)
+                ->delete();
     }
 
 }

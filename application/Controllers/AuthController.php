@@ -4,26 +4,31 @@ namespace NhatHoa\App\Controllers;
 use NhatHoa\Framework\Core\Request;
 use NhatHoa\Framework\Abstract\Controller;
 use NhatHoa\App\Models\User;
-use NhatHoa\App\Models\Order;
+use NhatHoa\App\Repositories\Interfaces\OrderRepositoryInterface;
+use NhatHoa\App\Repositories\Interfaces\UserRepositoryInterface;
 use NhatHoa\App\Services\EmailService;
+use NhatHoa\App\Services\OrderService;
+use NhatHoa\App\Services\UserService;
 use NhatHoa\Framework\Event;
 use NhatHoa\Framework\Facades\Auth;
 use NhatHoa\Framework\Facades\DB;
 
 class AuthController extends Controller
 {
-    protected $userModel;
+    protected $userService;
+    protected $userRepository;
+    protected $orderRepository;
 
-    public function __construct(User $user)
+    public function __construct(UserService $userService,UserRepositoryInterface $userRepository,OrderRepositoryInterface $orderRepository)
     {
-        $this->userModel = $user;
+        $this->userService = $userService;
+        $this->userRepository = $userRepository;
+        $this->orderRepository = $orderRepository;
     }
 
     public function loginView()
     {
-        if(Auth::check()){
-           return redirect("user/member");
-        }
+        if(Auth::check()) return redirect("user/member");
         return view("client/auth/login");
     }
 
@@ -33,7 +38,7 @@ class AuthController extends Controller
             "login_key" => "bail|required|email",
             "password" => "required"
         ]);
-        $array = $this->userModel->login($validated["login_key"],$validated["password"]);
+        $array = $this->userService->login($validated["login_key"],$validated["password"]);
         if($array["status"]){
             Auth::login($array["user"]);
             return redirect("user/member");
@@ -60,7 +65,7 @@ class AuthController extends Controller
             "email" => "bail|required|email|unique:users",
             "password" => "bail|required|regex:/^[0-9A-Za-z]{6,}$/"
         ]);
-        $verify_token = $this->userModel->register($validated);
+        $verify_token = $this->userRepository->register($validated);
         $href = url("auth/email/verify?token={$verify_token}");
         $message = "<a href='{$href}'>Vui lòng click vào đây để xác thực tài khoản</a>";
         Event::dispatch("email",[$emailService,$validated["email"],"Xác thực tài khoản",$message]);
@@ -87,9 +92,7 @@ class AuthController extends Controller
             case "address/edit":
                 if(get_query("id")){
                     $address = $user->getMeta("address",meta_id:get_query("id"),full:true);
-                    if(!$address){
-                        redirect("user/addresses");
-                    }
+                    if(!$address) redirect("user/addresses");
                     $data['address'] = unserialize($address->meta_value);
                     $data['id'] = $address->id;
                 }else{
@@ -105,7 +108,7 @@ class AuthController extends Controller
                     "completed" => $user->countOrders("completed"),
                     "cancelled" => $user->countOrders("cancelled"),
                 );
-                $data['status_map'] = (new Order)->getMapStatus();
+                $data['status_map'] = OrderService::getMapStatus();
                 $data['number_map'] = $number_map;
                 $status = get_query("status");
                 if($status){
@@ -116,14 +119,13 @@ class AuthController extends Controller
                 }
                 break;
             case "order":
-                if(get_query("id"))
-                {
+                if(get_query("id")){
                     $order_id = get_query("id");
                     $order = $user->getOrder($order_id);
                     if($order){
                         $data['order_meta'] = array();
-                        $data['status_map'] = $order->getMapStatus();
-                        $data['order'] = $order->getOrder($order->id);
+                        $data['status_map'] = OrderService::getMapStatus();
+                        $data['order'] = $this->orderRepository->getById($order->id);
                         $order_meta = $order->getMetas();
                         if(!empty($order_meta)){
                             $order_meta = array_map(function($item){
@@ -174,13 +176,9 @@ class AuthController extends Controller
     public function resetPassword(Request $request)
     {
         $token = $request->input("token");
-        if(!$token){
-            return;
-        }
+        if(!$token) return;
         $email = DB::table("password_resets")->where("token",$token)->first("email");
-        if(!$email){
-            return;
-        }
+        if(!$email) return;
         $validated = $request->validate([
             "password" => "bail|required|regex:/^[^\s]{6,}$/",
             "retype_password" => "bail|required|same:password"
@@ -199,9 +197,7 @@ class AuthController extends Controller
     public function resetPasswordView()
     {
         $token = get_query("token");
-        if(!$token){
-            return "Không có token";
-        }
+        if(!$token) return "Không có token";
         if(!DB::table("password_resets")->where("token",$token)->first()){
             return "Token không tồn tại";
         }

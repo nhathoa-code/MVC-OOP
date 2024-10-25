@@ -728,6 +728,14 @@ class Mysql extends Base
         return $result->records ?? 0;
     }
 
+    public function exists()
+    {
+        $sql = $this->_buildSelect();
+        $sql = "SELECT EXISTS({$sql}) as 'exists'";
+        $result = $this->_connector->selectOne($sql,$this->_params);
+        return $result->exists;
+    }
+
     public function groupBy($columns)
     {
         $this->_groupBy = $columns;

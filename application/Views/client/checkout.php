@@ -247,17 +247,18 @@
                                                     <p class="name">
                                                         <a href="<?php echo url("product/detail/{$item['p_id']}") ?>"><?php echo $item['p_name'] ?></a>
                                                     </p>
-                                                    <ul class="cart-variations">
+                                                    <ul class="cart-variations d-flex">
                                                         <?php if(isset($item['size'])): ?>
                                                         <li>
-                                                            <span class="variation">Kích cỡ:</span>
                                                             <span class="value"><?php echo $item['size'] ?></span>
                                                         </li>
+                                                        <?php if(isset($item['color_id'])): ?>
+                                                        <div class="vr mx-1 mx-2"></div>
+                                                        <?php endif; ?>
                                                         <?php endif; ?>
                                                         <?php if(isset($item['color_id'])): ?>
                                                         <li class="d-flex align-items-center">
-                                                            <span class="variation">Màu sắc:</span>
-                                                            <img class="color-image ms-2 me-1" src="<?php echo $item['color_image'] ?>" alt="">
+                                                            <img class="color-image me-1" src="<?php echo $item['color_image'] ?>" alt="">
                                                             <span class="value"><?php echo $item['color_name'] ?></span>
                                                         </li>
                                                         <?php endif; ?>
@@ -266,8 +267,8 @@
                                                     <div class="cart-p-price d-block d-sm-none">
                                                         <p class="price"><?php echo number_format($item["price"],0,"",".") ?>đ</p>
                                                     </div>
-                                                    <div class="d-flex justify-content-between d-block d-sm-none">
-                                                        <span><?php echo $item['quantity'] ?></span>
+                                                    <div class="d-flex justify-content-between align-items-center d-block d-sm-none">
+                                                        <span style="font-size:13px">x <?php echo $item['quantity'] ?></span>
                                                         <p class="cart-item-total"><?php echo number_format($item['price'] * $item['quantity'],0,"",".") ?>đ</p>
                                                     </div>
                                                     <!-- for mobile screen -->   
@@ -281,7 +282,7 @@
                                             </div>   
                                         </div>
                                         <div class="col-2 d-none d-sm-block">
-                                            <span><?php echo $item['quantity'] ?></span>
+                                            <span style="font-size:13px"><?php echo $item['quantity'] ?></span>
                                         </div>
                                         <div class="col d-none d-sm-block">
                                             <div class="d-flex flex-column justify-content-between h-100">

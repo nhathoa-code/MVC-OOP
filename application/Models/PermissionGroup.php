@@ -6,32 +6,6 @@ use NhatHoa\Framework\Abstract\Model;
 class PermissionGroup extends Model
 {
     protected $_table = "permission_groups";
-    
-    public function getAll()
-    {
-        $groups = $this->all();
-        $groups = array_map(function($item){
-            $item->permissions = $item->getPermissions();
-            return $item;
-        },$groups);
-        return $groups;
-    }
-
-    public function saveGroup($validated)
-    {
-        $this->name = $validated['name'];
-        $this->save();
-    }
-
-    public function updateGroup($validated)
-    {
-        $this->saveGroup($validated);
-    }
-
-    public function deleteGroup()
-    {
-        $this->delete();
-    }
 
     public function addPermission($name)
     {

@@ -74,4 +74,7 @@
     </div>
     <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">                              
 </form>
+<script>
+    var provinces = <?php echo json_encode($provinces); ?>;
+</script>
 <?php include_once APP_PATH . "/application/Views/admin/footer.php" ?>

@@ -56,13 +56,14 @@ class Model extends Base implements \JsonSerializable
         }
     }
 
-    public function getTable()
+    public static function getTable()
     {
-        if (empty($this->_table)){
-            $this->_table = explode("\\",strtolower(get_class($this)));
-            $this->_table = end($this->_table) . "s";
+        $model = new static();
+        if (empty($model->_table)){
+            $model->_table = explode("\\",strtolower(get_class($model)));
+            $model->_table = end($model->_table) . "s";
         }
-        return $this->_table;
+        return $model->_table;
     }
 
     public function getPrimary()
@@ -300,13 +301,29 @@ class Model extends Base implements \JsonSerializable
         return $query;
     }
 
-    public static function count($table = null, $where = array(), $whereNull = array())
+    public static function query()
     {
         $model = new static();
-        return $model->_count($table, $where, $whereNull);
+        return $model->_query();
     }
 
-    protected function _count($table = null, $where = array(), $whereNull = array())
+    protected function _query()
+    {
+        $query = $this
+            ->getConnector()
+            ->query()
+            ->from($this->getTable())
+            ->setClass(get_class($this));
+        return $query;
+    }
+
+    public static function count($table = null, $where = array(), $whereNull = array(), $limit = null)
+    {
+        $model = new static();
+        return $model->_count($table, $where, $whereNull, $limit);
+    }
+
+    protected function _count($table = null, $where = array(), $whereNull = array(), $limit = null)
     {
         $query = $this
             ->getConnector()
@@ -326,7 +343,39 @@ class Model extends Base implements \JsonSerializable
         foreach ($whereNull as $column){
             $query->whereNull($column);
         }
+        if($limit){
+            $query->limit($limit);
+        }
         return $query->count();
+    }
+
+    public static function exists($table = null, $where = array(), $whereNull = array())
+    {
+        $model = new static();
+        return $model->_exists($table, $where, $whereNull);
+    }
+
+    protected function _exists($table = null, $where = array(), $whereNull = array())
+    {
+        $query = $this
+            ->getConnector()
+            ->query()
+            ->from($table ? $table : $this->getTable());
+        foreach ($where as $column => $value){
+            if(is_array($value)){
+                $operator = $value["operator"];
+                unset($value["operator"]);
+                foreach($value as $column => $val){
+                    $query->where($column,$operator,$val);
+                }
+            }else{
+                $query->where($column, $value);
+            }
+        }
+        foreach ($whereNull as $column){
+            $query->whereNull($column);
+        }
+        return $query->exists();
     }
 
     public static function limit($limit)
@@ -385,7 +434,7 @@ class Model extends Base implements \JsonSerializable
         return $query;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize() : array
     {
         return [...$this->_columns,...$this->_custom_properties];
     }

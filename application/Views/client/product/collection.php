@@ -11,98 +11,15 @@
                                         </svg>
                                 </h1>
                                 <ul class="common-color-palette collapse show" id="collapseColorsFilter">
+                                    <?php foreach($colors_filter as $item): ?>
                                     <li>
-                                        <label>
+                                        <label title="<?php echo $item->color_name; ?>">
                                             <?php $colors = (array) query("color") ?? []; ?>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="TRẮNG" <?php echo in_array("TRẮNG",$colors) ? "checked" : "" ?>>
-                                            <span class="mark white">TRẮNG</span>
+                                            <input type="checkbox" name="color[]" class="rbtn" value="<?php echo $item->color_name ?>" <?php echo in_array("TRẮNG",$colors) ? "checked" : "" ?>>
+                                            <span style="background-image: url('<?php echo url("{$item->color_image}") ?>');" class="mark"><?php echo $item->color_name; ?></span>
                                         </label>
-                                        <span>TRẮNG</span>
                                     </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="ĐEN" <?php echo in_array("ĐEN",$colors) ? "checked" : "" ?>>
-                                            <span class="mark black">ĐEN</span>
-                                        </label>
-                                        <span>ĐEN</span>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="XÁM" <?php echo in_array("XÁM",$colors) ? "checked" : "" ?>>
-                                            <span class="mark grey">XÁM</span>
-                                        </label>
-                                        <span>XÁM</span>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="NÂU" <?php echo in_array("NÂU",$colors) ? "checked" : "" ?>>
-                                            <span class="mark brown">NÂU</span>
-                                        </label>
-                                        <span>NÂU</span>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="BE" <?php echo in_array("BE",$colors) ? "checked" : "" ?>>
-                                            <span class="mark beige">BE</span>
-                                        </label>
-                                        <span>BE</span>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="XANH LÁ" <?php echo in_array("XANH LÁ",$colors) ? "checked" : "" ?>>
-                                            <span class="mark green">XANH LÁ</span>
-                                        </label>
-                                        <span>XANH LÁ</span>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="XANH DƯƠNG" <?php echo in_array("XANH DƯƠNG",$colors) ? "checked" : "" ?>>
-                                            <span class="mark blue">XANH DƯƠNG</span>
-                                        </label>
-                                        <span>XANH DƯƠNG</span>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="TÍM" <?php echo in_array("TÍM",$colors) ? "checked" : "" ?>>
-                                            <span class="mark purple">TÍM</span>
-                                        </label>
-                                        <span>TÍM</span>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="VÀNG" <?php echo in_array("VÀNG",$colors) ? "checked" : "" ?>>
-                                            <span class="mark yellow">VÀNG</span>
-                                        </label>
-                                        <span>VÀNG</span>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="HỒNG" <?php echo in_array("HỒNG",$colors) ? "checked" : "" ?>>
-                                            <span class="mark pink">HỒNG</span>
-                                        </label>
-                                        <span>HỒNG</span>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="ĐỎ" <?php echo in_array("ĐỎ",$colors) ? "checked" : "" ?>>
-                                            <span class="mark red">ĐỎ</span>
-                                        </label>
-                                        <span>ĐỎ</span>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="CAM" <?php echo in_array("CAM",$colors) ? "checked" : "" ?>>
-                                            <span class="mark orange">CAM</span>
-                                        </label>
-                                        <span>CAM</span>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="" <?php echo in_array("",$colors) ? "checked" : "" ?>>
-                                            <span class="mark other">KHÁC</span>
-                                        </label>
-                                        <span>KHÁC</span>
-                                    </li>
+                                    <?php endforeach; ?>
                                 </ul>
                             </section>
                             <section class="collection-size-filter mb-4">
@@ -166,97 +83,15 @@
                                         <path fill-rule="evenodd" d="M12.056 7.496a.6.6 0 0 1 .85 0l7.2 7.2a.6.6 0 1 1-.85.85L12.48 8.768l-6.775 6.776a.6.6 0 1 1-.85-.85l7.2-7.2Z" clip-rule="evenodd"></path></svg>
                                     </h1>
                                     <ul class="common-color-palette collapse ms-3 show" id="collapseColorsFilter">
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="TRẮNG" <?php echo in_array("TRẮNG",$colors) ? "checked" : "" ?>>
-                                                <span class="mark white">TRẮNG</span>
-                                            </label>
-                                            <span>TRẮNG</span>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="ĐEN" <?php echo in_array("ĐEN",$colors) ? "checked" : "" ?>>
-                                                <span class="mark black">ĐEN</span>
-                                            </label>
-                                            <span>ĐEN</span>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="XÁM" <?php echo in_array("XÁM",$colors) ? "checked" : "" ?>>
-                                                <span class="mark grey">XÁM</span>
-                                            </label>
-                                            <span>XÁM</span>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="NÂU" <?php echo in_array("NÂU",$colors) ? "checked" : "" ?>>
-                                                <span class="mark brown">NÂU</span>
-                                            </label>
-                                            <span>NÂU</span>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="BE" <?php echo in_array("BE",$colors) ? "checked" : "" ?>>
-                                                <span class="mark beige">BE</span>
-                                            </label>
-                                            <span>BE</span>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="XANH LÁ" <?php echo in_array("XANH LÁ",$colors) ? "checked" : "" ?>>
-                                                <span class="mark green">XANH LÁ</span>
-                                            </label>
-                                            <span>XANH LÁ</span>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="XANH DƯƠNG" <?php echo in_array("XANH DƯƠNG",$colors) ? "checked" : "" ?>>
-                                                <span class="mark blue">XANH DƯƠNG</span>
-                                            </label>
-                                            <span>XANH DƯƠNG</span>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="TÍM" <?php echo in_array("TÍM",$colors) ? "checked" : "" ?>>
-                                                <span class="mark purple">TÍM</span>
-                                            </label>
-                                            <span>TÍM</span>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="VÀNG" <?php echo in_array("VÀNG",$colors) ? "checked" : "" ?>>
-                                                <span class="mark yellow">VÀNG</span>
-                                            </label>
-                                            <span>VÀNG</span>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="HỒNG" <?php echo in_array("HỒNG",$colors) ? "checked" : "" ?>>
-                                                <span class="mark pink">HỒNG</span>
-                                            </label>
-                                            <span>HỒNG</span>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="ĐỎ" <?php echo in_array("ĐỎ",$colors) ? "checked" : "" ?>>
-                                                <span class="mark red">ĐỎ</span>
-                                            </label>
-                                            <span>ĐỎ</span>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="CAM" <?php echo in_array("CAM",$colors) ? "checked" : "" ?>>
-                                                <span class="mark orange">CAM</span>
-                                            </label>
-                                            <span>CAM</span>
-                                        </li>
-                                        <li>
-                                            <label>
-                                                <input type="checkbox" name="color[]" class="rbtn" value="" <?php echo in_array("",$colors) ? "checked" : "" ?>>
-                                                <span class="mark other">KHÁC</span>
-                                            </label>
-                                            <span>KHÁC</span>
-                                        </li>
+                                        <?php foreach($colors_filter as $item): ?>
+                                            <li>
+                                                <label title="<?php echo $item->color_name; ?>">
+                                                    <?php $colors = (array) query("color") ?? []; ?>
+                                                    <input type="checkbox" name="color[]" class="rbtn" value="<?php echo $item->color_name ?>" <?php echo in_array("TRẮNG",$colors) ? "checked" : "" ?>>
+                                                    <span style="background-image: url('<?php echo url("{$item->color_image}") ?>');" class="mark"><?php echo $item->color_name; ?></span>
+                                                </label>
+                                            </li>
+                                        <?php endforeach; ?>
                                     </ul>
                                 </section>
                                 <section class="collection-size-filter mb-4">

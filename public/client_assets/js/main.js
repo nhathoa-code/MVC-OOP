@@ -7,6 +7,21 @@ var price;
 var minicart_timeout;
 var adding_to_cart = false;
 
+if (typeof main !== "undefined") {
+  $("section#banner #banner-slider").slick({
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    dots: true,
+    prevArrow: `<button class="slick-prev slick-arrow" aria-label="Previous" type="button" style=""><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
+  </svg></button>`,
+    nextArrow: `<button class="slick-next slick-arrow" aria-label="Next" type="button" style=""><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="bi        bi-chevron-right" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+    </svg></button>`,
+  });
+}
+
 if (typeof product_detail !== "undefined") {
   $("#add-to-cart, #buy-now").click(function () {
     if (adding_to_cart === true) {
@@ -97,20 +112,20 @@ if (typeof product_detail !== "undefined") {
                     <div class="name">${res.item.p_name}</div>
                     <div class="variation d-flex">
                         ${
-                          res.item.hasOwnProperty("color_id")
+                          res.item.color_id
                             ? `<div class="color d-flex align-items-center">
                             <img src="${res.item.color_image}" alt="">
                             <span class="ms-1">${res.item.color_name}</span>
                         </div>
                         ${
-                          res.item.hasOwnProperty("size")
+                          res.item.size
                             ? '<div class="vr mx-1 mx-1"></div>'
                             : ""
                         }`
                             : ""
                         }
                         ${
-                          res.item.hasOwnProperty("size")
+                          res.item.size
                             ? `<div class="size">${res.item.size}</div>`
                             : ""
                         }
@@ -377,7 +392,11 @@ $(".toggle-qty").click(function () {
     contentType: false,
     success: function (res) {
       $(`#cart-table #cart-body .cart-qty-${res.index}`).val(res.quantity);
+      $(`#mini-cart .cart-qty-${res.index}`).text(res.quantity);
       $("#cart-subtotal #number").text(
+        new Intl.NumberFormat({ style: "currency" }).format(res.subtotal) + "đ"
+      );
+      $(`#mini-cart .mini-number`).text(
         new Intl.NumberFormat({ style: "currency" }).format(res.subtotal) + "đ"
       );
       $("#cart-header .number").text(res.totalItems);

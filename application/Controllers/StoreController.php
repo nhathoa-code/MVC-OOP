@@ -8,17 +8,20 @@ use NhatHoa\App\Models\Store;
 use NhatHoa\App\Models\Product;
 use NhatHoa\App\Models\Province;
 use NhatHoa\App\Middlewares\AdminAuth;
-use NhatHoa\Framework\Validation\Rule;
+use NhatHoa\App\Repositories\Interfaces\ProductRepositoryInterface;
+use NhatHoa\App\Repositories\Interfaces\StoreRepositoryInterface;
+use NhatHoa\App\Validations\StoreValidation;
 use NhatHoa\Framework\Facades\Excel;
 use NhatHoa\Framework\Facades\Gate;
 
 class StoreController extends Controller
 {
-    protected $storeModel;
+    protected $storeRepository;
+    protected $limit = 10;
 
-    public function __construct(Store $store)
+    public function __construct(StoreRepositoryInterface $storeRepository)
     {
-        $this->storeModel = $store;
+        $this->storeRepository = $storeRepository;
         $this->middleware(AdminAuth::class)
             ->only([
                 "addInventory",
@@ -29,10 +32,8 @@ class StoreController extends Controller
 
     public function index(Province $province)
     {
-        if(!Gate::allows("read-store")){
-            abort(401);
-        }
-        $stores = $this->storeModel->getList();
+        if(!Gate::allows("read-store")) abort(401);
+        $stores = $this->storeRepository->getAll();
         $provinces = array_map(function($item){
             $item->districts = $item->getDistricts();
             return $item;
@@ -40,34 +41,18 @@ class StoreController extends Controller
         return view("admin/store/index",array("stores" => $stores,"provinces"=>$provinces));
     }
 
-    public function add(Request $request)
+    public function add(Request $request,StoreValidation $storeValidation)
     {
-        if(!Gate::allows("create-store")){
-            abort(401);
-        }
-        $validated = $request->validate([
-            "name" => "required|unique:stores",
-            "address" => "required",
-            "coordinates" => "required",
-            "province_id" => "bail|required|exists:provinces,id",
-            "district_id" => [
-                "bail",
-                "required",
-                Rule::exists("province_districts","id")->where(function($query) use($request){
-                    return $query->where("province_id",$request->post("province_id"));
-                })
-            ]
-        ]);
-        $this->storeModel->saveStore($validated);
+        if(!Gate::allows("create-store")) abort(401);
+        $validated = $storeValidation->validateCreate($request);
+        $this->storeRepository->create($validated);
         return response()->back()->with("success","Thêm cửa hàng thành công");
     }
 
     public function edit($id,Province $province)
     {
-        $store = $this->storeModel->getStore($id);
-        if(!$store){
-            return;
-        }
+        $store = $this->storeRepository->getById($id);
+        if(!$store) return;
         $provinces = array_map(function($item){
             $item->districts = $item->getDistricts();
             return $item;
@@ -78,57 +63,35 @@ class StoreController extends Controller
         return view("admin/store/edit",array("store"=>$store,"provinces"=>$provinces,"districts"=>$districts));
     }
 
-    public function update(Request $request,$id)
+    public function update(Request $request, $id, StoreValidation $storeValidation)
     {
-        if(!Gate::allows("update-store")){
-            abort(401);
-        }
-        $validated = $request->validate([
-            "name" => "required|unique:stores,name,$id",
-            "address" => "required",
-            "coordinates" => "required",
-            "province_id" => "bail|required|exists:provinces,id",
-            "district_id" => [
-                "bail",
-                "required",
-                Rule::exists("province_districts","id")->where(function($query) use($request){
-                    return $query->where("province_id",$request->post("province_id"));
-                })
-            ],
-        ]);
-        $store = $this->storeModel->first(where:array("id" => $id));
-        if(!$store){
-            return;
-        }
-        $store->updateStore($validated);
+        if(!Gate::allows("update-store")) abort(401);
+        $validated = $storeValidation->validateUpdate($request,$id);
+        $store = $this->storeRepository->getById($id);
+        if(!$store) return;
+        $this->storeRepository->update($store,$validated);
         return response()->back()->with("success","Sửa cửa hàng thành công");
     }
 
     public function delete($id)
     {
-        if(!Gate::allows("delete-store")){
-            abort(401);
-        }
-        $store = $this->storeModel->first(where:array("id"=>$id));
-        if(!$store){
-            return;
-        }
-        $store->deleteStore();
+        if(!Gate::allows("delete-store")) abort(401);
+        $store = $this->storeRepository->getById($id);
+        if(!$store) return;
+        $this->storeRepository->delete($store);
         return response()->back()->with("success","Xóa cửa hàng thành công");
     }
 
-    public function findProduct($product_id,Product $product)
+    public function findProduct($product_id,ProductRepositoryInterface $productRepository)
     {
-        $product = $product->getProduct($product_id);
-        if(!$product){
-            return response()->json("Không tìm thấy sản phẩm",400);
-        }
+        $product = $productRepository->getById($product_id);
+        if(!$product) return response()->json("Không tìm thấy sản phẩm",400);
         return response()->json($product);
     }
 
     public function addInventoryView($id)
     {
-        $store = $this->storeModel->first(where:array("id"=>$id));
+        $store = $this->storeRepository->getById($id);
         $products_in_store = $store->getProductsIds(all:true);
         if(count($products_in_store) > 0){
             $products = Product::all(whereNotIn:array("id" => $products_in_store));
@@ -138,135 +101,42 @@ class StoreController extends Controller
         return view("admin/store/add_inventory",["store"=>$store,"products"=>$products]);
     }
 
-    public function addInventory(Request $request,$id)
+    public function addInventory(Request $request, $id, StoreValidation $storeValidation)
     {
-        $validation = array();
-        $validation["store"] = "required|exists:stores,id";
-        $validation["products"] = 
-        [
-            "bail",
-            "required",
-            "array",
-            "string",
-            "distinct",
-            "exists:products,id",
-            Rule::unique("inventory","product_id")->where(function($query) use($id){
-                return $query->where("store_id",$id);
-            })
-        ];
-        foreach($request->post("products") as $p_id){
-            if($request->has("colors_of_product_{$p_id}")){
-                $validation["colors_of_product_{$p_id}"] = "array|exists:product_colors,id";
-                if(is_array($request->post("colors_of_product_{$p_id}"))){
-                    foreach($request->post("colors_of_product_{$p_id}") as $color){
-                        if($request->has("sizes_of_color_{$color}")){
-                            $validation["sizes_of_color_{$color}"] = "array";
-                            $validation["sizes_of_color_{$color}.*"] = "required";
-                            if(is_array($request->post("sizes_of_color_{$color}"))){
-                                foreach($request->post("sizes_of_color_{$color}") as $size){
-                                    $formated_size = str_replace(".","*",$size);
-                                    $validation["stock_of_product_{$p_id}_color_{$color}_{$formated_size}"] = "required|integer|min:1";
-                                    $validation["price_of_product_{$p_id}_color_{$color}_{$formated_size}"] = "required|integer|min:10000";
-                                }
-                            }
-                        }else{
-                            $validation["stock_of_product_{$p_id}_color_{$color}"] = "required|integer|min:1";
-                            $validation["price_of_product_{$p_id}_color_{$color}"] = "required|integer|min:10000";
-                        }
-                    }
-                }
-            }else if($request->has("sizes_of_product_{$p_id}")){
-                $validation["sizes_of_product_{$p_id}"] = "array";
-                $validation["sizes_of_product_{$p_id}.*"] = "required";
-                if(is_array($request->post("sizes_of_product_{$p_id}"))){
-                    foreach($request->post("sizes_of_product_{$p_id}") as $size){
-                        $formated_size = str_replace(".","*",$size);
-                        $validation["stock_of_product_{$p_id}_size_{$formated_size}"] = "required|integer|min:1";
-                        $validation["price_of_product_{$p_id}_size_{$formated_size}"] = "required|integer|min:10000";
-                    }
-                }
-            }else{
-                $validation["stock_of_product_{$p_id}"] = "required|integer|min:1";
-                $validation["price_of_product_{$p_id}"] = "required|integer|min:10000";
-            }
-        }
-        $validated = $request->validate($validation);
-        $store = $this->storeModel->getStore($id);
+        $validated = $storeValidation->validateAddInventory($request, $id);
+        $store = $this->storeRepository->getById($id);
+        if(!$store) return;
         $store->saveInventory($validated);
         return response()->flash("success","Thêm kho thành công !")
                     ->json(["back_url"=>url("admin/store/{$store->id}/inventory")]);
     }
 
-    public function inventory(Request $request,$id)
+    public function inventory(Request $request,$id,ProductRepositoryInterface $productRepository)
     {
-        $store = $this->storeModel->getStore($id);
+        $store = $this->storeRepository->getById($id);
         if(!$store){
             return response()->redirect("admin/store")->with("error","Cửa hàng không tồn tại");
         }
-        $limit = 10;
-        $currentPage = $request->has("page") && is_numeric($request->input("page")) ? $request->input("page") : 1;
-        if($request->has("keyword") && !empty($request->input("keyword"))){
-            $keyword = $request->input("keyword");
-        }else{
-            $keyword = null;
-        }
-        list($inventory,$number_of_products) = $store->getInventory($currentPage, $limit, $keyword);
-        $totalPages = ceil($number_of_products / $limit);
+        $currentPage = max((int) $request->query("page"),1);
+        $keyword = $request->query("keyword"); 
+        list($inventory,$number_of_products) = $store->getInventory($currentPage, $this->limit, $keyword, false,productRepository:$productRepository);
+        $totalPages = ceil($number_of_products / $this->limit);
         return view("admin/store/inventory",["store"=>$store,"inventory"=>$inventory,"number_of_products"=>$number_of_products,"totalPages"=>$totalPages,"currentPage"=>$currentPage]);
     }
 
-    public function productInventory($id,$product_id)
+    public function productInventory($id,$product_id,ProductRepositoryInterface $productRepository)
     {
         $store = Store::first(where:array("id"=>$id));
-        if(!$store){
-            return;
-        }
-        $product = $store->getInventoryProduct($product_id);
+        if(!$store) return;
+        $product = $store->getInventoryProduct($product_id,$productRepository);
         return view("admin/store/inventory_product_edit",["store"=>$store,"product"=>$product]);
     }
 
-    public function updateProductInventory(Request $request,$id,$product_id)
+    public function updateProductInventory(Request $request, $id, $product_id, StoreValidation $storeValidation)
     {
-        $validation = array();
-        $validation["store"] = "required|exists:stores,id";
-        $validation["product"] = [
-            "required",
-            Rule::exists("store_products")->where(function($query) use($id,$product_id){
-                return $query->where("store_id",$id)->where("product_id",$product_id);
-            })
-        ];
-        if($request->has("colors_of_product_{$product_id}")){
-            $validation["colors_of_product_{$product_id}"] = "array|exists:product_colors,id";
-            if(is_array($request->post("colors_of_product_{$product_id}"))){
-                foreach($request->post("colors_of_product_{$product_id}") as $color){
-                    if($request->has("sizes_of_color_{$color}")){
-                        $validation["sizes_of_color_{$color}"] = "array";
-                        $validation["sizes_of_color_{$color}.*"] = "required";
-                        if(is_array($request->post("sizes_of_color_{$color}"))){
-                            foreach($request->post("sizes_of_color_{$color}") as $size){
-                                $formated_size = str_replace(".","*",$size);
-                                $validation["stock_of_product_{$product_id}_color_{$color}_{$formated_size}"] = "required|integer|min:0";
-                            }
-                        }
-                    }else{
-                        $validation["stock_of_product_{$product_id}_color_{$color}"] = "required|integer|min:0";
-                    }
-                }
-            }
-        }else if($request->has("sizes_of_product_{$product_id}")){
-            $validation["sizes_of_product_{$product_id}"] = "array";
-            $validation["sizes_of_product_{$product_id}.*"] = "required";
-            if(is_array($request->post("sizes_of_product_{$product_id}"))){
-                foreach($request->post("sizes_of_product_{$product_id}") as $size){
-                    $formated_size = str_replace(".","*",$size);
-                    $validation["stock_of_product_{$product_id}_size_{$formated_size}"] = "required|integer|min:0";
-                }
-            }
-        }else{
-            $validation["stock_of_product_{$product_id}"] = "required|integer|min:0";
-        }
-        $validated = $request->validate($validation);
-        $store = $this->storeModel->getStore($id);
+        $validated = $storeValidation->validateUpdateInventory($request,$id,$product_id);
+        $store = $this->storeRepository->getById($id);
+        if(!$store) return;
         $store->updateInventory($validated,$product_id);
         return response()->flash("success","Cập nhật kho thành công !")
                 ->json(["back_url"=>url("admin/store/{$store->id}/inventory")]);
@@ -274,7 +144,7 @@ class StoreController extends Controller
 
     public function deleteProductInventory($id,$product_id)
     {
-        $store = $this->storeModel->getStore($id);
+        $store = $this->storeRepository->getById($id);
         if($store){
             $store->deleteInventory($product_id);
             return response()->back()->with("success","Đã xóa sản phẩm khỏi cửa hàng");
@@ -283,20 +153,15 @@ class StoreController extends Controller
         } 
     }
 
-    public function exportExcel(Request $request,$id)
+    public function exportExcel(Request $request,$id,ProductRepositoryInterface $productRepository)
     {
-        $limit = 10;
-        $currentPage = $request->has("page") && is_numeric($request->input("page")) ? $request->input("page") : 1;
-        if($request->has("keyword") && !empty($request->input("keyword"))){
-            $keyword = $request->input("keyword");
-        }else{
-            $keyword = null;
-        }
-        $store = $this->storeModel->getStore($id);
+        $currentPage = max((int) $request->query("page"),1);
+        $keyword = $request->query("keyword"); 
+        $store = $this->storeRepository->getById($id);
         if(!$store){
             return response()->redirect("admin/store")->with("error","Cửa hàng không tồn tại");
         }
-        list($products) = $store->getInventory($currentPage, $limit, $keyword);
+        list($products) = $store->getInventory($currentPage, $this->limit, $keyword, false,productRepository:$productRepository);
         $data = array();
         foreach($products as $p){
             if(isset($p->colors_sizes)){

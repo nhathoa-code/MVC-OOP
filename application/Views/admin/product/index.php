@@ -131,7 +131,7 @@
                         <td class="product-actions">
                             <a href="<?php echo url("admin/product/edit/{$p->id}") ?>">Cập nhật</a>
                             <a href="<?php echo url("product/detail/{$p->id}") ?>">Xem sản phẩm</a>
-                            <a style="color:brown" href="javascript:void(0)" onclick="deleteProduct(<?php echo $p->id ?>,'<?php echo $p->id ?>')">Xóa sản phẩm</a>
+                            <a style="color:brown" href="javascript:void(0)" onclick="deleteProduct('<?php echo $p->id ?>')">Xóa sản phẩm</a>
                             <form id="delete-product-<?php echo $p->id; ?>" style="display:none" method="POST" action="<?php echo url("admin/product/delete/{$p->id}"); ?>"><input type="hidden" name="csrf_token" value="<?php echo csrf_token() ?>"></form>
                         </td>
                     </tr>

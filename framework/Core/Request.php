@@ -7,9 +7,9 @@ use NhatHoa\Framework\Registry;
 
 class Request extends Base
 {
-    protected Validator $_validator; 
+    protected Validator|null $_validator; 
 
-    public function __construct(Validator $validator)
+    public function __construct(Validator|null $validator = null)
     {
         parent::__construct();
         $this->_validator = $validator;

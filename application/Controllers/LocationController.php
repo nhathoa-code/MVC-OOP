@@ -5,26 +5,28 @@ namespace NhatHoa\App\Controllers;
 use NhatHoa\App\Middlewares\AdminAuth;
 use NhatHoa\Framework\Core\Request;
 use NhatHoa\Framework\Abstract\Controller;
-use NhatHoa\App\Models\Province;
+use NhatHoa\App\Repositories\Interfaces\ProvinceRepositoryInterface;
 
 class LocationController extends Controller
 {
-    protected $provinceModel;
+    protected $provinceRepository;
 
-    public function __construct(Province $model)
+    public function __construct(ProvinceRepositoryInterface $provinceRepository)
     {
-        $this->provinceModel = $model;
+        $this->provinceRepository = $provinceRepository;
         $this->middleware(AdminAuth::class)->only(
-            ["updateProvince",
-            "deleteProvince",
-            "updateDistrict",
-            "deleteDistrict"
-        ]);
+            [
+                "updateProvince",
+                "deleteProvince",
+                "updateDistrict",
+                "deleteDistrict"
+            ]
+        );
     }
 
     public function index()
     {
-        $provinces = Province::all();
+        $provinces = $this->provinceRepository->getAll();
         return view("admin/location/index",["provinces"=>$provinces]);
     }
 
@@ -33,16 +35,14 @@ class LocationController extends Controller
         $validated = $request->validate([
             "name" => "required|unique:provinces"
         ]);
-        $this->provinceModel->add($validated["name"]);
+        $this->provinceRepository->create($validated);
         return response()->back()->with("success","Thêm tỉnh/thành thành công");
     }
 
     public function editProvince($id)
     {
-        $province = Province::first(where:array("id"=>$id));
-        if(!$province){
-            return;
-        }
+        $province = $this->provinceRepository->getById($id);
+        if(!$province) return;
         return view("admin/location/edit_province",["province"=>$province]);
     }
 
@@ -51,42 +51,34 @@ class LocationController extends Controller
         $validated = $request->validate([
             "name" => "required|unique:locations,name,$id"
         ]);
-        $province = Province::first(where:array("id"=>$id));
-        if(!$province){
-            return;
-        }
-        $province->update($validated["name"]);
+        $province = $this->provinceRepository->getById($id);
+        if(!$province) return;
+        $this->provinceRepository->update($province,$validated);
         return response()->redirect("admin/location/province")
                         ->with("success","Cập nhật tỉnh/thành thành công");
     }
 
     public function deleteProvince($id)
     {
-        $province = Province::first(where:array("id"=>$id));
-        if(!$province){
-            return;
-        }
-        $province->delete();
+        $province = $this->provinceRepository->getById($id);
+        if(!$province) return;
+        $this->provinceRepository->delete($province);
         return response()->redirect("admin/location/province")
                         ->with("success","Xóa tỉnh/thành thành công");
     }
 
     public function districts($id)
     {
-        $province = Province::first(where:array("id"=>$id));
-        if(!$province){
-            return;
-        }
+        $province = $this->provinceRepository->getById($id);
+        if(!$province) return;
         $districts = $province->getDistricts();
         return view("admin/location/province_districts",["province"=>$province,"districts"=>$districts]);
     }
 
     public function addDistrict(Request $request,$id)
     {
-        $province = Province::first(where:array("id"=>$id));
-        if(!$province){
-            return;
-        }
+        $province = $this->provinceRepository->getById($id);
+        if(!$province) return;
         $validated = $request->validate([
             "name" => "required|unique:province_districts"
         ]);
@@ -96,20 +88,16 @@ class LocationController extends Controller
 
     public function editDistrict($province_id,$district_id)
     {
-        $province = Province::first(where:array("id"=>$province_id));
-        if(!$province){
-            return;
-        }
+        $province = $this->provinceRepository->getById($province_id);
+        if(!$province) return;
         $district = $province->getDistrict($district_id);
         return view("admin/location/edit_district",["province"=>$province,"district"=>$district]);
     }
 
     public function updateDistrict(Request $request,$province_id,$district_id)
     {
-        $province = Province::first(where:array("id"=>$province_id));
-        if(!$province){
-            return;
-        }
+        $province = $this->provinceRepository->getById($province_id);
+        if(!$province) return;
         $validated = $request->validate([
             "name" => "required|unique:province_districts,name,$district_id"
         ]);
@@ -120,10 +108,8 @@ class LocationController extends Controller
 
     public function deleteDistrict($province_id,$district_id)
     {
-        $province = Province::first(where:array("id"=>$province_id));
-        if(!$province){
-            return;
-        }
+        $province = $this->provinceRepository->getById($province_id);
+        if(!$province) return;
         $province->deleteDistrict($district_id);
         return response()->redirect("admin/location/province/{$province_id}/districts")
                         ->with("success","Xóa quận/huyện thành công");

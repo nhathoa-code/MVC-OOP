@@ -6,38 +6,42 @@ use NhatHoa\Framework\Abstract\Controller;
 use NhatHoa\App\Models\Category;
 use NhatHoa\App\Models\Coupon;
 use NhatHoa\App\Models\Order;
-use NhatHoa\App\Models\Product;
 use NhatHoa\App\Models\Province;
+use NhatHoa\App\Repositories\Interfaces\CouponRepositoryInterface;
+use NhatHoa\App\Repositories\Interfaces\OrderRepositoryInterface;
+use NhatHoa\App\Repositories\Interfaces\ProductRepositoryInterface;
 use NhatHoa\App\Services\CartService;
+use NhatHoa\App\Services\CategoryService;
 use NhatHoa\App\Services\EmailService;
 use NhatHoa\App\Services\InventoryService;
 use NhatHoa\App\Services\Factories\PaymentFactory;
+use NhatHoa\App\Services\OrderService;
+use NhatHoa\App\Services\ProductService;
+use NhatHoa\App\Validations\ClientValidation;
 use NhatHoa\Framework\Event;
 use NhatHoa\Framework\Facades\Auth;
 use NhatHoa\Framework\Facades\DB;
 
 class ClientController extends Controller
 {
-    protected $categoryModel;
-    protected $productModel;
+    protected $productRepository;
 
-    public function __construct(Category $category,Product $product)
+    public function __construct(ProductRepositoryInterface $productRepository)
     {
-        $this->categoryModel = $category;
-        $this->productModel = $product;
+        $this->productRepository = $productRepository;
     }
 
-    public function index(Order $order)
+    public function index(OrderService $orderService)
     {
-        $data['categories'] = $this->categoryModel->all(whereNull:array("parent_id"));
+        $data['categories'] = Category::all(whereNull:array("parent_id"));
         $data['latest_products'] = array_map(function($item){
             $item->colors = $item->getColors();
             $item->thumbnail = getFiles("images/products/{$item->dir}/product_images")[0];
             return $item;
-        },$this->productModel->getLatest(8));
+        },$this->productRepository->getLatest(8));
         $top_saled_products = array_map(function($item){
-            return new Product(DB::table("products")->where("id",$item->id)->first());
-        },$order->getTopSaled(10));
+            return $this->productRepository->getById($item->id);
+        },$orderService->getTopSaled(10));
         $data["top_saled_products"] = array_map(function($item){
             $item->colors = $item->getColors();
             $item->thumbnail = getFiles("images/products/{$item->dir}/product_images")[0];
@@ -50,11 +54,10 @@ class ClientController extends Controller
     {
         $limit = isMobileDevice() ? 8 : 9;
         $collection = array();
-        $category_id = $this->categoryModel->getLastIdFromUrl($categories);
+        $category_id = CategoryService::getLastIdFromUrl($categories);
         if($category_id){
-            $page = (int) $request->query("page");
-            $page = $page > 0 ? $page : 1;
-            list($collection,$number_of_products,$total_pages) = $this->productModel->filter($request,$category_id,$limit,$page);
+            $page = max((int) $request->query("page"),1);
+            list($collection,$number_of_products,$total_pages) = ProductService::filter($request,$category_id,$limit,$page);
             $total_pages = ceil($number_of_products / $limit);
             $collection = array_map(function($item) use($request){
                 if($request->isAjax()){
@@ -72,15 +75,8 @@ class ClientController extends Controller
             if($request->isAjax()){
                 return response()->json(["collection"=>$collection,"total_pages"=>$total_pages,"number_of_products"=>$number_of_products]);
             }else{
-                $sizes_filter = DB::table("product_categories as pc")
-                                        ->select(["pcs.size"])
-                                        ->leftJoin("products as p","p.id","=","pc.p_id")
-                                        ->leftJoin("product_sizes as ps","ps.p_id","=","p.id")
-                                        ->leftJoin("product_colors_sizes as pcs","pcs.p_id","=","p.id")
-                                        ->where("cat_id",$category_id)
-                                        ->whereNotNull("pcs.size")
-                                        ->distinct()
-                                        ->get();
+                $sizes_filter = ProductService::getFilteredSizes($category_id);
+                $colors_filter = ProductService::getFilteredColors($category_id);
                 return view("client/product/collection",
                     [
                         "collection"=>$collection,
@@ -90,7 +86,8 @@ class ClientController extends Controller
                         "limit"=>$limit,
                         "page"=>$page,
                         "displayed_products"=>count($collection),
-                        "sizes_filter"=>$sizes_filter
+                        "sizes_filter"=>$sizes_filter,
+                        "colors_filter"=>$colors_filter
                     ]
                 );             
             }
@@ -101,10 +98,8 @@ class ClientController extends Controller
     {
         $keyword = get_query("keyword");
         if($keyword){
-            $limit = 8;
-            $page = (int) $request->query("page");
-            $page = $page > 0 ? $page : 1;
-            list($collection,$number_of_products,$total_pages) = $this->productModel->search($request,$keyword,$page,$limit);
+            $page = max((int) $request->query("page"),1);
+            list($collection,$number_of_products,$total_pages) = ProductService::search($request,$keyword,$page,8);
             $collection = array_map(function($item) use($request){
                 if($request->isAjax()){
                     $item->colors = array_map((function($item){
@@ -126,7 +121,7 @@ class ClientController extends Controller
                         "collection" => $collection,
                         "total_pages" => $total_pages,
                         "number_of_products" => $number_of_products,
-                        "limit" => $limit,
+                        "limit" => 8,
                         "page" => $page,
                         "displayed_products" => count($collection)
                     ]);
@@ -168,10 +163,8 @@ class ClientController extends Controller
     public function product(Request $request,$id,Province $province)
     {   
         $data = array();
-        $product = $this->productModel->getProduct($id);
-        if(!$product){
-            return;
-        }
+        $product = $this->productRepository->getById($id);
+        if(!$product) return;
         $data['product'] = $product;
         if(Auth::check()){
             if(Auth::user()->hasWishList($product->id)){
@@ -216,25 +209,12 @@ class ClientController extends Controller
         return view("client/checkout",$data);
     }
 
-    public function checkout(Request $request,CartService $cartService,InventoryService $inventoryService,Coupon $coupon,EmailService $emailService)
+    public function checkout(Request $request,CartService $cartService,InventoryService $inventoryService,CouponRepositoryInterface $couponRepository,EmailService $emailService,ClientValidation $clientValidation,OrderRepositoryInterface $orderRepository)
     {
         if(!$request->session()->has("cart") || empty($request->session()->get("cart"))){
             return redirect("cart");
         }
-        $validated = $request->validate([
-            "name" => "required",
-            "email" => "bail|required|email",
-            "phone" => "bail|required|regex:/^0[0-9]{9}$/",
-            "province" => "required",
-            "district" => "required",
-            "ward" => "required",
-            "address" => "required",
-            "payment_method" => "bail|required|in:cod,vnpay",
-            "shipping_fee" => "bail|required|numeric",
-            "v_point" => "bail|nullable|required|integer|min:1"
-        ],[
-            "phone.regex" => "Điện thoại không hợp lệ"
-        ]);
+        $validated = $clientValidation->validateCheckout($request);
         foreach($cartService->getItems() as $index => $item){
             $array = $inventoryService->checkStock($item["p_id"],$item["p_name"],$item["color_id"] ?? null,$item["color_name"] ?? null,$item["size"] ?? null,$item["quantity"]);
             if($array["status"]){
@@ -245,9 +225,7 @@ class ClientController extends Controller
         }
         $order_total = $cartService->countSubtotal(); 
         $email = Auth::check() ? Auth::user()->email : $validated["email"];
-        $name = $validated["name"];
         $address = array("ward"=> $validated["ward"],"district"=>$validated["district"],"city"=>$validated["province"],"address"=>$validated["address"]);
-        $phone = $validated["phone"];
         $payment_method = $validated["payment_method"];
         $data = [
             "user_id" => login() ? getUser()->id : null,
@@ -255,9 +233,9 @@ class ClientController extends Controller
             "payment_method" => $payment_method,
             "status" => "pending",
             "shipping_fee" => $validated["shipping_fee"],
-            "name" => $name,
+            "name" => $validated["name"],
             "email" => $email,
-            "phone" => $phone,
+            "phone" => $validated["phone"],
             "address" => json_encode($address),
             "note" => $validated["note"]
         ];
@@ -266,7 +244,7 @@ class ClientController extends Controller
                 return response()->back()->with("message","Đăng nhập để có thể áp dụng mã giảm giá");
             }
             $coupon_code = $validated["coupon"];
-            $Coupon = $coupon->getCouponByCode($coupon_code);
+            $Coupon = $couponRepository->getByCode($coupon_code);
             if($Coupon){
                 if(!login()){
                     return response()->back()->with("message","Đăng nhập để có thể áp dụng mã giảm giá");
@@ -296,21 +274,20 @@ class ClientController extends Controller
         }
         $order_id =  date('d') . date('m') . explode(".",number_format(microtime(true), 6))[1];
         $data['id'] = $order_id;
-        $order = new Order;
-        $order->saveOrder($data,$Coupon ?? null,$V_point ?? null,$cartService,$inventoryService);
-        Event::dispatch("order-email",[$order,$emailService,"VNH - Xác nhận đơn hàng","confirm_order"]);
+        $newOrder = $orderRepository->create($data,$Coupon ?? null,$V_point ?? null,$cartService,$inventoryService);
+        Event::dispatch("order-email",[$newOrder,$emailService,"VNH - Xác nhận đơn hàng","confirm_order"]);
         $cartService->reset();
-        $order->processPayment(PaymentFactory::get($payment_method));
+        $newOrder->processPayment(PaymentFactory::get($payment_method));
         return view("client/success",["order_id"=>$order_id]);
     }
 
-    public function applyCoupon(Request $request,Coupon $coupon,CartService $cartService)
+    public function applyCoupon(Request $request,CouponRepositoryInterface $couponRepository,CartService $cartService)
     {
         $validated = $request->validate([
             "coupon_code" => "required"
         ]);
         $coupon_code = $validated["coupon_code"];
-        $coupon = $coupon->getCouponByCode($coupon_code);
+        $coupon = $couponRepository->getByCode($coupon_code);
         if($coupon){
             if(!login()){
                 return response()->json("Đăng nhập để có thể áp dụng mã giảm giá",400);
@@ -336,23 +313,24 @@ class ClientController extends Controller
             return response()->json("vui lòng đăng nhập trước",400);
         }
         $point_from_user = Auth::user()->getMeta("point");
-        if($point_from_user){
+        if($point_from_user != null){
             if($point > $point_from_user){
                return response()->json("Số dư không khả dụng!",400);
             }
             return response()->json(["point" => $point,"message"=>"Áp dụng v-point thành công"]);
         }
+        return response()->json("Số dư không khả dụng!",400);
     }
 
-    public function orderTrack(Order $order)
+    public function orderTrack(OrderRepositoryInterface $orderRepository)
     {
         $data = array();
         $order_id = get_query("order_id");
         if($order_id){
            if(preg_match("/^[0-9]{10}$/",$order_id)){
-                $order = $order->getOrder($order_id);
+                $order = $orderRepository->getById($order_id);
                 if($order){
-                    $data['status_map'] = $order->getMapStatus();
+                    $data['status_map'] = OrderService::getMapStatus();
                     $data['order'] = $order;
                 }else{
                     $data['not_found'] = true;

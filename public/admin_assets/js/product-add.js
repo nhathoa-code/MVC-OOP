@@ -1428,11 +1428,20 @@ $("#add-product-form").submit(function (e) {
     processData: false,
     contentType: false,
     success: function (response) {
-      // return console.log(response);
       window.location.href = response.back;
     },
     error: function (xhr, status, error) {
-      return console.log(xhr);
+      if (xhr.status === 401) {
+        notif({
+          msg: xhr.responseJSON,
+          type: "warning",
+          position: "center",
+          height: "auto",
+          top: 80,
+          timeout: 5000,
+          animation: "slide",
+        });
+      }
     },
   }).always(() => {
     is_uploading = false;
