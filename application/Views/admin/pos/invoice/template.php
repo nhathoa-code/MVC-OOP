@@ -52,7 +52,7 @@
 <body>
     <div id="invoice">
         <div id="logo">
-            <img style="width:100px" src="<?php echo url("client_assets/images/logo.png"); ?>" alt="">
+            <img style="width:100px" src="<?php echo url("client_assets/images/logo-black.png"); ?>" alt="">
         </div>
         <div id="header">
             <div>
@@ -62,7 +62,7 @@
                 nhathoa512@gmail.com
             </div>
             <div>
-                https://vnhfashion.shop
+                https://vongnhathoa.site
             </div>
         </div>
         <div id="invoice-number">

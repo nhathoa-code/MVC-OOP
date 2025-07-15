@@ -4,7 +4,6 @@ namespace NhatHoa\App\Controllers;
 use NhatHoa\Framework\Core\Request;
 use NhatHoa\Framework\Abstract\Controller;
 use NhatHoa\App\Models\Category;
-use NhatHoa\App\Models\Coupon;
 use NhatHoa\App\Models\Order;
 use NhatHoa\App\Models\Province;
 use NhatHoa\App\Repositories\Interfaces\CouponRepositoryInterface;
@@ -33,12 +32,16 @@ class ClientController extends Controller
 
     public function index(OrderService $orderService)
     {
-        $data['categories'] = Category::all(whereNull:array("parent_id"));
+        $data['featured_categories'] = Category::all(where:array('featured'=>true));
         $data['latest_products'] = array_map(function($item){
             $item->colors = $item->getColors();
             $item->thumbnail = getFiles("images/products/{$item->dir}/product_images")[0];
             return $item;
         },$this->productRepository->getLatest(8));
+        $data['quan_ao'] = array_map(function($item){
+            $item->thumbnail = getFiles("images/products/{$item->dir}/product_images")[0];
+            return $item;
+        },ProductService::getProductsFromCategoryIds([14,17]));;
         $top_saled_products = array_map(function($item){
             return $this->productRepository->getById($item->id);
         },$orderService->getTopSaled(10));
@@ -52,9 +55,9 @@ class ClientController extends Controller
 
     public function collection(Request $request,$categories)
     {
-        $limit = isMobileDevice() ? 8 : 9;
+        $limit = 8;
         $collection = array();
-        $category_id = CategoryService::getLastIdFromUrl($categories);
+        list($category_id,$breadcrumb) = CategoryService::getLastIdFromUrl($categories);
         if($category_id){
             $page = max((int) $request->query("page"),1);
             list($collection,$number_of_products,$total_pages) = ProductService::filter($request,$category_id,$limit,$page);
@@ -87,7 +90,8 @@ class ClientController extends Controller
                         "page"=>$page,
                         "displayed_products"=>count($collection),
                         "sizes_filter"=>$sizes_filter,
-                        "colors_filter"=>$colors_filter
+                        "colors_filter"=>$colors_filter,
+                        "breadcrumb" => $breadcrumb
                     ]
                 );             
             }
@@ -174,9 +178,11 @@ class ClientController extends Controller
         if(!$request->session()->has("recent_viewed_products=>{$product->id}")){
             $request->session()->push("recent_viewed_products",$product,$product->id);
         }
-        $data['recent_viewed_products'] = array_filter($request->session()->get("recent_viewed_products"),function($item) use($product){
-            return $item->id !== $product->id;
-        });
+        $data['recent_viewed_products'] = array_filter(
+            $request->session()->get("recent_viewed_products"),
+            function($item) use($product){
+                return $item->id !== $product->id;
+            });
         $data["related_products"] = array_map(function($item){
             $item->colors = $item->getColors();
             $item->thumbnail = getFiles("images/products/{$item->dir}/product_images")[0];
@@ -344,7 +350,7 @@ class ClientController extends Controller
 
     public function vnpayConfirm(Request $request,Order $order)
     {
-        $vnp_HashSecret = "HOBQFVGFSTRKIMJOTRJRIBQIZOUVTBWI";
+        $vnp_HashSecret = "BPYWBH38NQVUCACC5LUCSRA91PK4CL60";
         $vnp_SecureHash = $_GET['vnp_SecureHash'];
         $inputData = array();
         foreach ($_GET as $key => $value) {

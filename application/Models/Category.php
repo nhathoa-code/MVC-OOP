@@ -19,6 +19,21 @@ class Category extends Model
         return $this->all(where:array("parent_id" => $this->id));
     }
 
+    public function hasParent()
+    {
+        $parent = $this->exists(
+            where:array("id"=>$this->id),
+            whereNotNull:array("parent_id")
+        );
+        if($parent) return true;
+        return false;
+    }
+
+    public function getParent()
+    {
+        return $this->first(where:array("id"=>$this->parent_id));
+    }
+
     public function countProducts()
     {
         $count = $this->count(table:"product_categories", where:array("cat_id" => $this->id));

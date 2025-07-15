@@ -552,7 +552,7 @@ li {
   font-size: 16px;
   margin: 10px 0 0;
   margin-bottom: 10px;
-  font-weight: 600;
+  /* font-weight: 600; */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2198,6 +2198,10 @@ table.size-chart .size {
     flex-direction: column;
     gap: 20px;
   }
+
+  .slick-dots {
+    bottom: 10px !important;
+  }
 }
 
 .navbar-toggler {
@@ -2218,20 +2222,58 @@ table.size-chart .size {
   justify-content: center;
   gap: 10px;
   position: absolute;
-  bottom: 40px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .slick-dots li button {
   font-size: 0;
-  width: 15px;
-  height: 15px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background-color: rgba(0, 0, 0, 0.26);
   border: none;
 }
 
 .slick-dots .slick-active button {
-  background-color: #d0011b;
+  background-color: rgb(127 0 25);
+}
+
+.a-button,
+.a-button {
+  height: auto;
+  font-weight: 700;
+}
+
+.a-button:hover {
+  background-color: rgb(127 0 25);
+  color: rgb(255 255 255) !important;
+}
+
+.a-button {
+  border-width: 1px;
+  border: 1px solid rgb(196 196 198);
+  /* background-color: rgb(255 255 255) !important; */
+  color: rgb(60 60 67);
+  padding: 8px 5px;
+  width: 80%;
+  font-size: 13px;
+  display: inline-block;
+  text-align: center;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.bg-vnh_primary {
+  background-color: rgb(127 0 25);
+}
+
+ol.breadcrumb {
+  font-size: 12px !important;
+}
+
+ol.breadcrumb li.active {
+  color: rgb(127 0 25);
+  font-weight: bold;
 }

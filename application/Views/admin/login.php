@@ -14,7 +14,7 @@
    <div id="login">
         <h1>
             <a href="<?php echo url("/"); ?>">
-                <img style="width: 150px;" src="<?php echo url("client_assets/images/logo.png") ?>" alt="">
+                <img style="width: 150px;" src="<?php echo url("client_assets/images/logo-black.png") ?>" alt="">
             </a>
         </h1>
   <form

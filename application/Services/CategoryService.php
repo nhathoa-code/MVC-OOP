@@ -10,6 +10,7 @@ class CategoryService extends Service
     public static function getLastIdFromUrl($string)
     {
         $cats_string = urldecode($string);
+        $categories = array();
         $slugs_arr = explode("/",$cats_string);
         $last_id = 0;
         foreach($slugs_arr as $index => $cat_slug){
@@ -19,12 +20,24 @@ class CategoryService extends Service
                 $cat = Category::first(where:array("parent_id"=>$last_id,"cat_slug"=>$cat_slug));
             }
             if($cat){
+                array_push($categories,$cat);
                 $last_id = $cat->id;
             }else{
                 return false;
             }
         }
-        return $last_id;
+        return [$last_id,$categories];
+    }
+
+    public static function getFullSlug(Category $cat, $prev_slug = null)
+    {
+        $full_slug = $prev_slug ?? '';
+        $full_slug = $cat->cat_slug . '/' . $full_slug;
+        if($cat->hasParent()){
+            $parent = $cat->getParent();
+            $full_slug = static::getFullSlug($parent,$full_slug);
+        }
+        return $full_slug;
     }
 
     public static function countProducts($category_id)

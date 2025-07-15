@@ -19,7 +19,7 @@
     <div class="col-4">
         <form id="add-cat-form" method="POST" action="<?php echo url("admin/category/add") ?>" enctype="multipart/form-data">
             <div class="mb-3">
-                <label for="exampleFormControlInput1" class="form-label">Name</label>
+                <label class="form-label">Name</label>
                 <input type="text" name="cat_name" value="<?php echo $old["cat_name"] ?? "" ?>" class="form-control">
                 <?php if(isset($errors['cat_name'])): ?>
                     <?php foreach($errors['cat_name'] as $message): ?>
@@ -27,9 +27,8 @@
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-            
             <div class="mb-3">
-                <label for="exampleFormControlTextarea1" class="form-label">Slug</label>
+                <label class="form-label">Slug</label>
                 <input type="text" name="cat_slug" value="<?php echo $old["cat_slug"] ?? "" ?>" class="form-control">
                 <?php if(isset($errors['cat_slug'])): ?>
                     <?php foreach($errors['cat_slug'] as $message): ?>
@@ -38,7 +37,7 @@
                 <?php endif; ?>
             </div>
             <div class="mb-3">
-                <label for="exampleFormControlTextarea1" class="form-label">Parent</label>
+                <label class="form-label">Parent</label>
                 <select name="parent_id" class="form-select form-control" aria-label="Default select example">
                     <option selected value="">none</option>
                     <?php
@@ -63,6 +62,14 @@
                         <p class="error mt-1"><?php echo $message; ?></p>
                     <?php endforeach; ?>
                 <?php endif; ?>
+            </div>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" name="featured" type="checkbox" id="featured">
+                    <label class="form-check-label" for="featured">
+                        Featured category
+                    </label>
+                </div>
             </div>
             <div class="mb-3">
                 <label for="">Thêm hình ảnh</label>
@@ -91,10 +98,12 @@
         <table id="cat-table" class="table table-borderless position-relative">
             <thead>
                 <tr>
+                    <th scope="col">ID</th>
                     <th scope="col">Name</th>
                     <th scope="col">Picture</th>
                     <th scope="col">Slug</th>
                     <th scope="col">Count</th>
+                    <th scope="col">Featured</th>
                 </tr>
             </thead>
             <?php
@@ -103,6 +112,7 @@
                     foreach($categories as $cat)
                     { ?>
                         <tr id="<?php echo "cat-{$cat->id}" ?>">
+                            <td>#<?php echo $cat->id; ?></td>
                             <td>
                                 <?php echo str_repeat("— ",$indent) . $cat->cat_name ?>
                                 <div class="row-actions">
@@ -120,6 +130,7 @@
                             </td>
                             <td><?php echo $cat->cat_slug ?></td>
                             <td><?php echo $cat->products; ?></td>
+                            <td><?php echo $cat->featured ? 'featured' : ''; ?></td>
                         </tr>
                         <?php
                             if($cat->children){

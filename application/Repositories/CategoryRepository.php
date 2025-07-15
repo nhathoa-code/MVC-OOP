@@ -8,7 +8,7 @@ use NhatHoa\App\Repositories\BaseRepository;
 
 class CategoryRepository extends BaseRepository implements CategoryRepositoryInterface
 {
-    public function getAll(array $categories = null) : array
+    public function getAll(array|null $categories) : array
     {
         $array = array();
         if(!$categories){
@@ -39,6 +39,9 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
         if(!empty($validated["parent_id"])){
             $category->parent_id = $validated['parent_id'];
         }
+        if($request->post("featured")){
+            $category->featured = true;
+        }
         if($request->hasFile("cat_image")){
             $category->cat_image = $request->file("cat_image")->save("images/cat");
         }
@@ -57,6 +60,11 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
         if(isset($validated["delete_cat_image"])){
             delete_file($validated["delete_cat_image"]);
             $category->cat_image = null;
+        }
+        if($request->post("featured")){
+            $category->featured = true;
+        }else{
+            $category->featured = false;
         }
         if($request->hasFile("cat_image")){
             if($category->cat_image){
@@ -80,7 +88,7 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
         $category->delete();
     }
 
-    public function fetchAll(array $categories = null) : array
+    public function fetchAll(array|null $categories = null) : array
     {
         $categories_arr = array();
         if(!$categories){

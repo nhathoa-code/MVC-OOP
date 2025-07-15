@@ -147,6 +147,17 @@ class ProductService extends Service
         return array($collection,$number_of_products,$total_pages);
     }
 
+    public static function getProductsFromCategoryIds(array $ids, int $limit = 20)
+    {
+        $product_ids = DB::table('product_categories')
+                    ->select(['p_id'])
+                    ->whereIn('cat_id', $ids)
+                    ->limit($limit)
+                    ->distinct()
+                    ->getArray('p_id');
+        return Product::whereIn('id',$product_ids)->get();   
+    }
+
     public static function getFilteredSizes(int $category_id)
     {
         return DB::table("product_categories as pc")

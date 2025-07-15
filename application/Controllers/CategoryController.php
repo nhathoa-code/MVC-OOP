@@ -3,7 +3,6 @@
 namespace NhatHoa\App\Controllers;
 use NhatHoa\Framework\Core\Request;
 use NhatHoa\Framework\Abstract\Controller;
-use NhatHoa\App\Middlewares\AdminAuth;
 use NhatHoa\App\Repositories\Interfaces\CategoryRepositoryInterface;
 use NhatHoa\App\Validations\CategoryValidation;
 use NhatHoa\Framework\Facades\Gate;
@@ -20,7 +19,7 @@ class CategoryController extends Controller
     public function index()
     {
         if(!Gate::allows("read-category")) abort(401);
-        $categories = $this->categoryRepository->getAll();
+        $categories = $this->categoryRepository->getAll(null);
         return view("admin/category/index", array("categories" => $categories));
     }
 
@@ -36,7 +35,7 @@ class CategoryController extends Controller
     {
         $category = $this->categoryRepository->getById($id);
         if(!$category) return;
-        $categories = $this->categoryRepository->getAll();
+        $categories = $this->categoryRepository->getAll(null);
         return view("admin/category/edit",["category" => $category,"categories" => $categories]);
     }
 

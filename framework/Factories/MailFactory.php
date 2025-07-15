@@ -26,7 +26,7 @@ class MailFactory extends Base
         if($config){
             $parsed = $config->parse(APP_PATH . "/config/mail");
             if (!empty($parsed->mail->default) && !empty($parsed->mail->default->type)){
-                $type =$parsed->mail->default->type;
+                $type = $parsed->mail->default->type;
                 unset($parsed->mail->default->type);
                 $this->__construct(array(
                     "type" => $type,

@@ -27,10 +27,10 @@ class PosController extends Controller
         $currentPage = max((int) $request->query("page"),1);
         $keyword = $request->query("keyword"); 
         $query = DB::table("sales")
-                    ->select(["sales.*","t.name as store","c.name as customer","c.id as customer_id"])
-                    ->join("stores as t","t.id","=","sales.store_id")
-                    ->join("customers as c","sales.customer_id","=","c.id")
-                    ->orderBy("sales.created_at","desc");
+            ->select(["sales.*","t.name as store","c.name as customer","c.id as customer_id"])
+            ->join("stores as t","t.id","=","sales.store_id")
+            ->join("customers as c","sales.customer_id","=","c.id")
+            ->orderBy("sales.created_at","desc");
         if($keyword){
             $query->where("sales.id",$keyword)->orWhere("c.name","like","%{$keyword}%")->orWhere("c.phone","like","%{$keyword}%");
         }
@@ -43,20 +43,20 @@ class PosController extends Controller
     public function showInvoice($invoice_id)
     {
         $invoice = DB::table("sales as s")->where("s.id",$invoice_id)
-                                ->join("customers as c","c.id","=","s.customer_id")
-                                ->join("users as u","u.id","=","s.employee_id")
-                                ->join("stores as t","t.id","=","s.store_id")
-                                ->join("provinces as p","p.id","=","t.province_id")
-                                ->join("province_districts as pd","pd.id","=","t.district_id")
-                                ->select(["s.*","t.name","t.address","c.name as customer_name","c.phone as customer_phone","p.name as province","pd.name as district","u.name as employee"])
-                                ->first();
+            ->join("customers as c","c.id","=","s.customer_id")
+            ->join("users as u","u.id","=","s.employee_id")
+            ->join("stores as t","t.id","=","s.store_id")
+            ->join("provinces as p","p.id","=","t.province_id")
+            ->join("province_districts as pd","pd.id","=","t.district_id")
+            ->select(["s.*","t.name","t.address","c.name as customer_name","c.phone as customer_phone","p.name as province","pd.name as district","u.name as employee"])
+            ->first();
         if($invoice){
             $invoice->items = DB::table("sale_items as si")
-                    ->where("sale_id",$invoice_id)
-                    ->join("products as p","si.product_id","=","p.id")
-                    ->leftJoin("product_colors as pc","si.color_id","=","pc.id")
-                    ->select(["si.*","p.p_name as product_name","pc.color_name"])
-                    ->get();
+                ->where("sale_id",$invoice_id)
+                ->join("products as p","si.product_id","=","p.id")
+                ->leftJoin("product_colors as pc","si.color_id","=","pc.id")
+                ->select(["si.*","p.p_name as product_name","pc.color_name"])
+                ->get();
             return view("admin/pos/invoice/invoice",["sale"=>$invoice]);
         }
     }
@@ -118,10 +118,10 @@ class PosController extends Controller
         $currentPage = max((int) $request->query("page"),1);
         $keyword = $request->query("keyword"); 
         $query = DB::table("sales")
-                    ->select(["sales.*","t.name as store","c.name as customer","c.phone as phone"])
-                    ->join("stores as t","t.id","=","sales.store_id")
-                    ->join("customers as c","sales.customer_id","=","c.id")
-                    ->orderBy("sales.created_at","desc");
+            ->select(["sales.*","t.name as store","c.name as customer","c.phone as phone"])
+            ->join("stores as t","t.id","=","sales.store_id")
+            ->join("customers as c","sales.customer_id","=","c.id")
+            ->orderBy("sales.created_at","desc");
         if($keyword){
             $query->where("sales.id",$keyword)->orWhere("c.name","like","%{$keyword}%")->orWhere("c.phone","like","%{$keyword}%");
         }

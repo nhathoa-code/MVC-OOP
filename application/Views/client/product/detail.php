@@ -579,11 +579,6 @@
                 <div style="font-weight: 500;font-size:24px;text-align:center" class="mb-4 mt-3">Đã xem gần đây</div>
                     <div class="collection recent-viewed-products owl-carousel owl-theme">
                     <?php foreach($recent_viewed_products as $p): ?>
-                            <?php 
-                                if($p->id === $product->id){
-                                    continue;
-                                }    
-                            ?>
                             <div class="collection-item">
                                <a href="<?php echo url("product/detail/{$p->id}") ?>">
                                     <img width="187.5" height="187.5" loading="lazy" src="<?php echo $p->images[0] ?>" style="display: inline;">

@@ -9,8 +9,8 @@ class Vnpay implements Payment
     public function process(string $order_id,float $amount)
     {
         date_default_timezone_set('Asia/Ho_Chi_Minh');
-        $vnp_TmnCode = "C3UM9OVV"; 
-        $vnp_HashSecret = "HOBQFVGFSTRKIMJOTRJRIBQIZOUVTBWI"; 
+        $vnp_TmnCode = "RNF5Y4GU"; 
+        $vnp_HashSecret = "BPYWBH38NQVUCACC5LUCSRA91PK4CL60"; 
         $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
         $vnp_Returnurl = url("vnpay/confirm");
         $startTime = date("YmdHis");

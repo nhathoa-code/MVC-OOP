@@ -321,6 +321,10 @@ svg.plus-icon {
   padding-bottom: 0;
 }
 
+#categoriesModal .modal-content .modal-body {
+  overflow: auto;
+}
+
 .picked {
   color: var(--primary-bold);
   font-weight: 700;

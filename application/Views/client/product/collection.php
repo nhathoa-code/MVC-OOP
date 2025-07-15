@@ -1,27 +1,52 @@
+<?php //var_dump($breadcrumb); ?>
 <?php include(APP_PATH . "/application/Views/client/header.php") ?>
         <section id="content">
+            <!-- <div class="category-banner m-auto mb-3">
+                <div class="category-image relative aspect-[375/200] md:aspect-[1352/480] flex justify-center items-center bg-muji_gray_300 overflow-hidden">
+                    <img class="d-none d-lg-block" alt="Đồ Dùng Gia Đình" loading="lazy" width="1352" height="480" decoding="async" data-nimg="1" class="category-banner-desktop object-cover hidden aspect-[1352/480] md:block w-full" src="https://api.muji.com.vn/media/catalog/category/houseware_-_Desktop_1.jpg" style="color: transparent;">
+                    <img class="d-sm-block d-lg-none" alt="Đồ Dùng Gia Đình" loading="lazy" width="375" height="200" decoding="async" data-nimg="1" class="category-banner-mobile object-cover w-full md:hidden" src="https://api.muji.com.vn/media/catalog/category/houseware_-_mobile_1.jpg" style="color: transparent;">
+                </div>
+            </div> -->
             <div class="container-fluid collection-content">
+                <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" class="mb-5">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                        <?php foreach($breadcrumb as $index => $item): ?>
+                            <?php if ($index === array_key_last($breadcrumb)): ?>
+                                <li class="breadcrumb-item active" aria-current="page"><?php echo $item->cat_name; ?></li>
+                            <?php else: ?>
+                                <li class="breadcrumb-item" aria-current="page">
+                                    <a href="<?php echo 'abc'; ?>"><?php echo $item->cat_name; ?></a>
+                                </li>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+
+                    </ol>
+                </nav>
                 <div class="row">
                     <div style="top:78.42px" class="col-12 col-lg-3 sticky d-none d-lg-block">
                         <form id="filter-form">
                             <button type="submit" style="padding:0.5rem 0.75rem !important" class="btn btn-secondary w-100 mb-2">Lọc</button>
-                            <section class="search-detail-color">
-                                <h1 data-bs-toggle="collapse" data-bs-target="#collapseColorsFilter" class="collection-left-title toggle-collapse filter-title">Màu sắc <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path fill-rule="evenodd" d="M12.056 7.496a.6.6 0 0 1 .85 0l7.2 7.2a.6.6 0 1 1-.85.85L12.48 8.768l-6.775 6.776a.6.6 0 1 1-.85-.85l7.2-7.2Z" clip-rule="evenodd"></path>
-                                        </svg>
-                                </h1>
-                                <ul class="common-color-palette collapse show" id="collapseColorsFilter">
-                                    <?php foreach($colors_filter as $item): ?>
-                                    <li>
-                                        <label title="<?php echo $item->color_name; ?>">
-                                            <?php $colors = (array) query("color") ?? []; ?>
-                                            <input type="checkbox" name="color[]" class="rbtn" value="<?php echo $item->color_name ?>" <?php echo in_array("TRẮNG",$colors) ? "checked" : "" ?>>
-                                            <span style="background-image: url('<?php echo url("{$item->color_image}") ?>');" class="mark"><?php echo $item->color_name; ?></span>
-                                        </label>
-                                    </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            </section>
+                            <?php if(count($colors_filter) > 0): ?>
+                                <section class="search-detail-color">
+                                    <h1 data-bs-toggle="collapse" data-bs-target="#collapseColorsFilter" class="collection-left-title toggle-collapse filter-title">Màu sắc <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M12.056 7.496a.6.6 0 0 1 .85 0l7.2 7.2a.6.6 0 1 1-.85.85L12.48 8.768l-6.775 6.776a.6.6 0 1 1-.85-.85l7.2-7.2Z" clip-rule="evenodd"></path>
+                                            </svg>
+                                    </h1>
+                                    <ul class="common-color-palette collapse show" id="collapseColorsFilter">
+                                        <?php $colors = (array) query("color") ?? []; ?>
+                                        <?php foreach($colors_filter as $item): ?>
+                                        <li>
+                                            <label title="<?php echo $item->color_name; ?>">
+                                                <input type="checkbox" name="color[]" class="rbtn" value="<?php echo $item->color_name ?>" <?php echo in_array("TRẮNG",$colors) ? "checked" : "" ?>>
+                                                <span style="background-image: url('<?php echo url("{$item->color_image}") ?>');" class="mark"><?php echo $item->color_name; ?></span>
+                                            </label>
+                                        </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </section>
+                            <?php endif; ?>
+                            <?php if(count($sizes_filter) > 0): ?>
                             <section class="collection-size-filter mb-4">
                                 <h1 data-bs-toggle="collapse" data-bs-target="#collapseSizesFilter" class="collection-left-title toggle-collapse filter-title">Kích cỡ <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path fill-rule="evenodd" d="M12.056 7.496a.6.6 0 0 1 .85 0l7.2 7.2a.6.6 0 1 1-.85.85L12.48 8.768l-6.775 6.776a.6.6 0 1 1-.85-.85l7.2-7.2Z" clip-rule="evenodd"></path>
@@ -36,6 +61,7 @@
                                     </ul>
                                 </div>
                             </section>
+                            <?php endif; ?>
                             <section class="collection-price-filter">
                                 <h1 data-bs-toggle="collapse" data-bs-target="#collapsePricesFilter" class="collection-left-title toggle-collapse filter-title">Giá <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path fill-rule="evenodd" d="M12.056 7.496a.6.6 0 0 1 .85 0l7.2 7.2a.6.6 0 1 1-.85.85L12.48 8.768l-6.775 6.776a.6.6 0 1 1-.85-.85l7.2-7.2Z" clip-rule="evenodd"></path>
@@ -73,11 +99,12 @@
                             <span class="ms-2">Bộ lọc</span>
                         </div>
                         <div style="font-size: 14px;">
-                            <span id="number-check"><?php echo count($colors) + count($sizes) + count($prices) ?></span> tiêu chí
+                            <span id="number-check"><?php echo count($colors ?? []) + count($sizes ?? []) + count($prices) ?></span> tiêu chí
                         </div>
                         <!-- for mobile -->
                         <div id="slideDiv" class="slide-out px-2">
                             <form id="filter-form-mobile">
+                                <?php if(count($colors_filter) > 0): ?>
                                 <section class="search-detail-color">
                                     <h1 data-bs-toggle="collapse" data-bs-target="#collapseColorsFilter" class="collection-left-title toggle-collapse filter-title">Màu sắc <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                                         <path fill-rule="evenodd" d="M12.056 7.496a.6.6 0 0 1 .85 0l7.2 7.2a.6.6 0 1 1-.85.85L12.48 8.768l-6.775 6.776a.6.6 0 1 1-.85-.85l7.2-7.2Z" clip-rule="evenodd"></path></svg>
@@ -94,6 +121,8 @@
                                         <?php endforeach; ?>
                                     </ul>
                                 </section>
+                                <?php endif; ?>
+                                <?php if(count($sizes_filter) > 0): ?>
                                 <section class="collection-size-filter mb-4">
                                     <h1 data-bs-toggle="collapse" data-bs-target="#collapseSizesFilter" class="collection-left-title toggle-collapse filter-title">Kích cỡ 
                                         <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -109,6 +138,7 @@
                                         </ul>
                                     </div>
                                 </section>
+                                <?php endif; ?>
                                 <section class="collection-price-filter">
                                     <h1 data-bs-toggle="collapse" data-bs-target="#collapsePricesFilter" class="collection-left-title toggle-collapse filter-title">Giá <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path fill-rule="evenodd" d="M12.056 7.496a.6.6 0 0 1 .85 0l7.2 7.2a.6.6 0 1 1-.85.85L12.48 8.768l-6.775 6.776a.6.6 0 1 1-.85-.85l7.2-7.2Z" clip-rule="evenodd"></path>
@@ -145,7 +175,7 @@
                         </div>
                     </div>
                     <div class="col-12 col-lg-9">
-                        <div class="row row-cols-2 row-cols-sm-3 gy-5 collection">
+                        <div class="row row-cols-2 row-cols-sm-4 gy-5 collection">
                             <?php foreach($collection as $p): ?>
                                 <div class="col">
                                     <div class="collection-item">

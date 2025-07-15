@@ -301,6 +301,23 @@ class Model extends Base implements \JsonSerializable
         return $query;
     }
 
+    public static function whereIn($column,$value)
+    {
+        $model = new static();
+        return $model->_whereIn($column,$value);
+    }
+
+    protected function _whereIn($column,$value)
+    {
+        $query = $this
+            ->getConnector()
+            ->query()
+            ->from($this->getTable())
+            ->setClass(get_class($this))
+            ->whereIn($column,$value);
+        return $query;
+    }
+
     public static function query()
     {
         $model = new static();
@@ -349,13 +366,13 @@ class Model extends Base implements \JsonSerializable
         return $query->count();
     }
 
-    public static function exists($table = null, $where = array(), $whereNull = array())
+    public static function exists($table = null, $where = array(), $whereNull = array(), $whereNotNull = array())
     {
         $model = new static();
-        return $model->_exists($table, $where, $whereNull);
+        return $model->_exists($table, $where, $whereNull, $whereNotNull);
     }
 
-    protected function _exists($table = null, $where = array(), $whereNull = array())
+    protected function _exists($table = null, $where = array(), $whereNull = array(), $whereNotNull = array())
     {
         $query = $this
             ->getConnector()
@@ -374,6 +391,9 @@ class Model extends Base implements \JsonSerializable
         }
         foreach ($whereNull as $column){
             $query->whereNull($column);
+        }
+        foreach ($whereNotNull as $column){
+            $query->whereNotNull($column);
         }
         return $query->exists();
     }

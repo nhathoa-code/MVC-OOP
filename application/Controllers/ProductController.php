@@ -37,7 +37,7 @@ class ProductController extends Controller
 
     public function addView()
     {
-        $categories = $this->categoryRepository->fetchAll();
+        $categories = $this->categoryRepository->fetchAll(null);
         $size_charts = SizeChart::all(orderBy:array("id"=>"desc"));
         return view("admin/product/add",["categories" => $categories,"size_charts"=>$size_charts]);
     }

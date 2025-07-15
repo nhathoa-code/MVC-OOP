@@ -64,8 +64,18 @@
                     <?php }
                     }
                     ?>
-                <?php displayParentOptions($categories, 0, $category,$old); ?>
+                <?php displayParentOptions($categories, 0, $category,$old ?? []); ?>
             </select>
+        </div>
+    </div>
+    <div class="row mb-5">
+        <div class="col-2">
+            <label for="">Featured</label>
+        </div>
+        <div class="col-5">
+            <div>
+                <input <?php echo ($old["featured"] ?? $category->featured) == true ? "checked" : "" ?> style="margin-left:0" class="form-check-input ms-0" name="featured" type="checkbox">
+            </div>
         </div>
     </div>
     <div class="row mb-5">

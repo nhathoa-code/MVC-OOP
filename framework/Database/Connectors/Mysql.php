@@ -71,7 +71,7 @@ class Mysql extends Connector
                     $this->_password
                 );
             }catch(PDOException $e){
-                throw new \Exception("Unable to connect to service" . $e->getMessage());
+                throw new \Exception("Unable to connect to service " . $e->getMessage());
             }
             $this->_isConnected = true;
         }
