@@ -4,6 +4,7 @@ use NhatHoa\App\Middlewares\Admin;
 use NhatHoa\App\Middlewares\User;
 
 use NhatHoa\App\Controllers\AdminController;
+use NhatHoa\App\Controllers\AttributeController;
 use NhatHoa\App\Controllers\CategoryController;
 use NhatHoa\App\Controllers\ProductController;
 use NhatHoa\App\Controllers\ClientController;
@@ -43,7 +44,7 @@ $router->get("/order/track",[ClientController::class,"orderTrack"]);
 
 $router->get("/vnpay/confirm",[ClientController::class,"vnpayConfirm"]);
 
-$router->get("/user/{part}",[AuthController::class,"user"],User::class);
+$router->get("/user/{part}",[AuthController::class,"user"], User::class);
 
 $router->group("wishlist",function() use($router){
     $router->post("/add",[WishListController::class,"add"]);
@@ -97,6 +98,20 @@ $router->group("admin",function() use($router){
         $router->post("/delete/{id}",[CategoryController::class,"delete"]);
         $router->get("/edit/{id}",[CategoryController::class,"edit"]);
         $router->post("/update/{id}",[CategoryController::class,"update"]);
+        $router->get("/{id}/attributes",[CategoryController::class,"getAttributes"]);
+    });
+
+    $router->group("attribute",function() use($router){
+        $router->get("/",[AttributeController::class,"index"]);
+        $router->post("/store",[AttributeController::class,"store"]);
+        $router->post("/delete/{id}",[AttributeController::class,"deleteAttribute"]);
+        $router->get("/edit/{id}",[AttributeController::class,"editAttribute"]);
+        $router->post("/update/{id}",[AttributeController::class,"updateAttribute"]);
+        $router->get("/{id}/values",[AttributeController::class,"getValues"]);
+        $router->post("/{id}/value/add",[AttributeController::class,"addValue"]);
+        $router->get("/{attribute_id}/value/{value_id}/edit",[AttributeController::class,"editValue"]);
+        $router->post("/{attribute_id}/value/{value_id}/update",[AttributeController::class,"updateValue"]);
+        $router->post("/{attribute_id}/value/{value_id}/delete",[AttributeController::class,"deleteValue"]);
     });
 
     $router->group("product",function() use($router){
@@ -219,6 +234,6 @@ $router->group("admin",function() use($router){
 
     $router->get("/(.*)",[AdminController::class,"notFound"]);
 
-},Admin::class);
+}, Admin::class);
 
 $router->get(".*",[ClientController::class,"notFound"]);

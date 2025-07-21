@@ -23,6 +23,12 @@
             lightbox.init();
         </script>
     <?php endif; ?>
+    <script src="<?php echo url("client_assets/js/jquery.smartmenus.js") ?>"></script>
+    <script>
+        $(function() {
+            $('#main-menu').smartmenus();
+        });
+    </script>
 </body>
 </html>
 

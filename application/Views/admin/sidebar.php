@@ -18,6 +18,13 @@
             </a>
         </li>
 
+        <li class="nav-item <?php echo strpos(current_route(),"attribute") !== false ? "active" : "" ?>">
+            <a class="nav-link" href="<?php echo url("admin/attribute"); ?>">
+                <i class="fas fa-folder"></i>
+                <span>Thuộc tính</span>
+            </a>
+        </li>
+
         <li class="nav-item <?php echo strpos(current_route(),"admin/product") !== false ? "active" : "" ?>">
             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProducts"
                 aria-expanded="true" aria-controls="collapseProducts">

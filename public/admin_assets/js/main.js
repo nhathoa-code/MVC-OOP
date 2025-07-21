@@ -109,6 +109,18 @@ function deleteCat(cat_id) {
   }
 }
 
+function deleteAttr(cat_id) {
+  if (confirm("Bạn thực sự muốn xóa thuộc tính này?")) {
+    $(`form#delete-attr-${cat_id}`).submit();
+  }
+}
+
+function deleteAttributeValue(value_id) {
+  if (confirm("Bạn thực sực muốn xóa giá trị này ?")) {
+    $(`form#delete-attribute-value-${value_id}`).submit();
+  }
+}
+
 function deleteCatImage(cat_image, event) {
   $(event.target)
     .parent()

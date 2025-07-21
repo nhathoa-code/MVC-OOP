@@ -164,6 +164,30 @@ class Mysql extends Base
         return $this;
     }
 
+    public function whereJsonContains($target, $candidate)
+    {
+        $args = func_get_args();
+        if(func_num_args() < 2){
+            throw new \Exception("Too less arguments,expected at least 2");
+        }
+        $target = $args[0];
+        $candidate = $args[1];
+        $this->_where[] = "JSON_CONTAINS({$target},'\"{$candidate}\"')";
+        return $this;
+    }
+
+    public function orWhereJsonContains($target, $candidate)
+    {
+        $args = func_get_args();
+        if(func_num_args() < 2){
+            throw new \Exception("Too less arguments,expected at least 2");
+        }
+        $target = $args[0];
+        $candidate = $args[1];
+        $this->_where[] = "OR JSON_CONTAINS({$target},'\"{$candidate}\"')";
+        return $this;
+    }
+
     public function whereIn()
     {
         $args = func_get_args();
@@ -177,11 +201,9 @@ class Mysql extends Base
                 throw new \Exception("Too less arguments,expected at least 2");
             }
             if($number_of_args === 2){
-                $operator = "=";
                 $column = $args[0];
                 $value = $args[1];
             }else if($number_of_args === 3){
-                $operator = $args[1];
                 $column = $args[0];
                 $value = $args[2];
             }
@@ -203,11 +225,9 @@ class Mysql extends Base
                 throw new \Exception("Too less arguments,expected at least 2");
             }
             if($number_of_args === 2){
-                $operator = "=";
                 $column = $args[0];
                 $value = $args[1];
             }else if($number_of_args === 3){
-                $operator = $args[1];
                 $column = $args[0];
                 $value = $args[2];
             }
@@ -504,7 +524,6 @@ class Mysql extends Base
 
     public function build()
     {
-        var_dump($this->_params);
         return $this->_buildSelect();
     }
 

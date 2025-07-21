@@ -72,6 +72,9 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         $product->p_price = $validated['p_price'] ?? 0;
         $product->p_stock = $validated['p_stock'] ?? 0;
         $product->p_desc = $validated['p_desc'];
+        if(isset($validated['attr_values'])){
+            $product->attr_values = json_encode($validated['attr_values']);
+        }
         $product->dir = $dir;
         $product->save();
         foreach($request->input("categories") as $cat){
@@ -139,7 +142,11 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         $product->p_price = $validated['p_price'] ?? 0;
         $product->p_stock = $validated['p_stock'] ?? 0;
         $product->p_desc = $validated['p_desc'];
-
+        if(isset($validated['attr_values'])){
+            $product->attr_values = json_encode($validated['attr_values']);
+        }else{
+            $product->attr_values = null;
+        }
         $categories_from_db = array_map(function($item){
             return $item->cat_id;
         }, DB::table("product_categories")->where("p_id",$product->id)->get());

@@ -1,26 +1,20 @@
-<?php //var_dump($breadcrumb); ?>
 <?php include(APP_PATH . "/application/Views/client/header.php") ?>
         <section id="content">
-            <!-- <div class="category-banner m-auto mb-3">
-                <div class="category-image relative aspect-[375/200] md:aspect-[1352/480] flex justify-center items-center bg-muji_gray_300 overflow-hidden">
-                    <img class="d-none d-lg-block" alt="Đồ Dùng Gia Đình" loading="lazy" width="1352" height="480" decoding="async" data-nimg="1" class="category-banner-desktop object-cover hidden aspect-[1352/480] md:block w-full" src="https://api.muji.com.vn/media/catalog/category/houseware_-_Desktop_1.jpg" style="color: transparent;">
-                    <img class="d-sm-block d-lg-none" alt="Đồ Dùng Gia Đình" loading="lazy" width="375" height="200" decoding="async" data-nimg="1" class="category-banner-mobile object-cover w-full md:hidden" src="https://api.muji.com.vn/media/catalog/category/houseware_-_mobile_1.jpg" style="color: transparent;">
-                </div>
-            </div> -->
             <div class="container-fluid collection-content">
-                <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" class="mb-5">
+                <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" class="mb-0 mb-lg-4">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                        <?php $current_crumb = ''; ?>
+                        <li class="breadcrumb-item"><a href="<?php echo url("/"); ?>">Trang chủ</a></li>
                         <?php foreach($breadcrumb as $index => $item): ?>
                             <?php if ($index === array_key_last($breadcrumb)): ?>
                                 <li class="breadcrumb-item active" aria-current="page"><?php echo $item->cat_name; ?></li>
                             <?php else: ?>
                                 <li class="breadcrumb-item" aria-current="page">
-                                    <a href="<?php echo 'abc'; ?>"><?php echo $item->cat_name; ?></a>
+                                    <a href="<?php echo url("collection/" . $current_crumb . (!empty($current_crumb) ? '/' : '') . $item->cat_slug); ?>"><?php echo $item->cat_name; ?></a>
                                 </li>
                             <?php endif; ?>
+                            <?php $current_crumb = $current_crumb . (!empty($current_crumb) ? '/' : '')  . $item->cat_slug; ?>
                         <?php endforeach; ?>
-
                     </ol>
                 </nav>
                 <div class="row">
@@ -88,6 +82,21 @@
                                     </li>
                                 </ul>
                             </section>
+                            <?php foreach($attributes_filter as $filter): ?>
+                                <section class="collection-price-filter">
+                                    <h1 data-bs-toggle="collapse" data-bs-target="#collapseAttributeFilter<?php echo $filter->id; ?>" class="collection-left-title toggle-collapse filter-title"><?php echo $filter->name; ?> <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M12.056 7.496a.6.6 0 0 1 .85 0l7.2 7.2a.6.6 0 1 1-.85.85L12.48 8.768l-6.775 6.776a.6.6 0 1 1-.85-.85l7.2-7.2Z" clip-rule="evenodd"></path>
+                                            </svg>
+                                    </h1>
+                                    <ul class="collapse show" id="collapseAttributeFilter<?php echo $filter->id; ?>">
+                                        <?php foreach($filter->values as $value): ?>
+                                            <li class="item">
+                                                <span class="price-check"><input type="checkbox" id="spa-checkbox-attr-group-<?php echo $value->id; ?>" name="attribute<?php echo $filter->id ?>[]" value="<?php echo $value->id ?>" <?php echo in_array($value->id,(array) query("attribute{$filter->id}") ?? []) ? "checked" : "" ?>><label for="spa-checkbox-attr-group-<?php echo $value->id; ?>" style="cursor: pointer;"><span style="font-size: 14px;"><?php echo $value->value; ?></span></label></span>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </section>
+                            <?php endforeach; ?>
                             <input type="hidden" name="category_id" value="<?php echo $category_id ?>">
                         </form>
                     </div>
@@ -139,7 +148,7 @@
                                     </div>
                                 </section>
                                 <?php endif; ?>
-                                <section class="collection-price-filter">
+                                <section class="collection-price-filter mb-4">
                                     <h1 data-bs-toggle="collapse" data-bs-target="#collapsePricesFilter" class="collection-left-title toggle-collapse filter-title">Giá <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path fill-rule="evenodd" d="M12.056 7.496a.6.6 0 0 1 .85 0l7.2 7.2a.6.6 0 1 1-.85.85L12.48 8.768l-6.775 6.776a.6.6 0 1 1-.85-.85l7.2-7.2Z" clip-rule="evenodd"></path>
                                             </svg></h1>
@@ -164,6 +173,21 @@
                                         </li>
                                     </ul>
                                 </section>
+                                <?php foreach($attributes_filter as $filter): ?>
+                                    <section class="collection-price-filter mb-4">
+                                        <h1 data-bs-toggle="collapse" data-bs-target="#collapseAttributeFilter<?php echo $filter->id; ?>" class="collection-left-title toggle-collapse filter-title"><?php echo $filter->name; ?> <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" d="M12.056 7.496a.6.6 0 0 1 .85 0l7.2 7.2a.6.6 0 1 1-.85.85L12.48 8.768l-6.775 6.776a.6.6 0 1 1-.85-.85l7.2-7.2Z" clip-rule="evenodd"></path>
+                                                </svg>
+                                        </h1>
+                                        <ul class="ms-3 collapse show" id="collapseAttributeFilter<?php echo $filter->id; ?>">
+                                            <?php foreach($filter->values as $value): ?>
+                                                <li class="item">
+                                                    <span class="price-check"><input type="checkbox" id="spa-checkbox-attr-group-<?php echo $value->id; ?>" name="attribute<?php echo $filter->id ?>[]" value="<?php echo $value->id ?>" <?php echo in_array($value->id,(array) query("attribute{$filter->id}") ?? []) ? "checked" : "" ?>><label for="spa-checkbox-attr-group-<?php echo $value->id; ?>" style="cursor: pointer;"><span style="font-size: 14px;"><?php echo $value->value; ?></span></label></span>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </section>
+                                <?php endforeach; ?>
                                 <button type="submit" style="padding:0.5rem 0.75rem !important" class="btn btn-secondary w-100 mb-2 mt-3">Lọc</button>
                                 <input type="hidden" name="category_id" value="<?php echo $category_id ?>">
                             </form>

@@ -171,13 +171,13 @@
                 <div class="collection owl-carousel owl-theme">
                     <?php foreach($quan_ao as $item): ?>
                     <div class="collection-item">
-                        <a href="<?php echo url("product/detail/{$p->id}") ?>">
+                        <a href="<?php echo url("product/detail/{$item->id}") ?>">
                             <img width="187.5" height="187.5" loading="lazy" src="<?php echo $item->thumbnail; ?>" style="display: inline;">
                             <div class="title"><?php echo $item->p_name; ?></div>
                         </a>
                         <div class="price">
                             <div>
-                                <span class="num"><?php echo number_format($p->p_price,0,"",".") ?></span><span class="currency">đ</span>
+                                <span class="num"><?php echo number_format($item->p_price,0,"",".") ?></span><span class="currency">đ</span>
                             </div>
                         </div>
                         <a class="a-button mt-3" href="<?php echo url('product/detail/' . $item->id); ?>"><span>Mua Hàng</span></a>

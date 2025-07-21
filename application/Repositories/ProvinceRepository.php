@@ -24,7 +24,7 @@ class ProvinceRepository extends BaseRepository implements ProvinceRepositoryInt
         $province->save();
     }
 
-    public function update(Province $province,$validated) : void
+    public function update(Province $province, $validated) : void
     {
         $province->name = $validated["name"];
         $province->save();

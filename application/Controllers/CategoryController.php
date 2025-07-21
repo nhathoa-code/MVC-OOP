@@ -57,4 +57,11 @@ class CategoryController extends Controller
         $this->categoryRepository->delete($category);
         return response()->back()->with("success","Xóa danh mục thành công");
     }
+
+    public function getAttributes($id)
+    {
+        $category = $this->categoryRepository->getById($id);
+        $attributes = $category->getAttributes();
+        return response()->json(['attributes'=>$attributes],200);
+    }
 }

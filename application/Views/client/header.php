@@ -9,6 +9,8 @@
     <script src="<?php echo url("client_assets/js/bootstrap.bundle.min.js") ?>"></script>
     <link rel="stylesheet" href="<?php echo url("client_assets/css/style.css"); ?>">
     <script src="<?php echo url("client_assets/js/jquery-3.7.1.min.js") ?>"></script>
+    <link rel="stylesheet" href="<?php echo url("client_assets/css/sm-core-css.css"); ?>">
+    <link rel="stylesheet" href="<?php echo url("client_assets/css/sm-blue.css"); ?>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.5/axios.min.js"></script>
     <script>
         const csrf_token = "<?php echo csrf_token() ?>";
@@ -63,26 +65,30 @@
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
                 <div class="offcanvas-body">    
-                    <ul id="header-menu" class="navbar-nav me-auto mb-2 mb-lg-0 ps-lg-5">
-                        <?php 
-                            use NhatHoa\App\Models\Category;
-                            $categories = Category::all(whereNull:array("parent_id"));
-                            foreach($categories as $cat):
-                        ?>
-                            <li class="main-menu-item nav-item">
-                                <a class="nav-link" href="<?php echo url("collection/{$cat->cat_slug}") ?>"><?php echo $cat->cat_name ?></a>
-                                <div class="submenu">
-                                    <ul class="submenu-content d-flex">
-                                        <?php foreach($cat->getChildren() as $cat_1): ?>
-                                        <li>
-                                            <a href="<?php echo url("collection/{$cat->cat_slug}/{$cat_1->cat_slug}") ?>"><?php echo $cat_1->cat_name ?></a>
-                                        </li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                </div>
+                    <?php function displayMenu(array $categories, string $slug = '', bool $root = true){ ?>
+                        <?php if($root == true): ?>
+                            <ul id="main-menu" class="sm sm-blue">
+                        <?php else: ?>
+                            <ul>
+                        <?php endif; ?>
+                            <?php foreach($categories as $cat): ?>
+                            <li>
+                                <a href="<?php echo url("collection/" . (!empty($slug) ? $slug . '/' : '') . "{$cat->cat_slug}") ?>"><?php echo $cat->cat_name; ?></a>
+                                <?php 
+                                    if($cat->children){
+                                        displayMenu($cat->children, !empty($slug) ? $slug . '/' . $cat->cat_slug : $cat->cat_slug, false);
+                                    }  
+                                ?>
                             </li>
-                        <?php endforeach; ?>
-                    </ul>
+                            <?php endforeach; ?>
+                        </ul> 
+                    <?php } ?>
+                    <?php
+                        use NhatHoa\App\Repositories\CategoryRepository;
+                        $catRepo = new CategoryRepository();
+                        $categories = $catRepo->getAll(null);
+                        displayMenu($categories);
+                    ?>
                 </div>
             </div>
             <div class="d-flex align-items-center justify-content-end">

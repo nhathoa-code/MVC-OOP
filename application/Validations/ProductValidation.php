@@ -14,7 +14,8 @@ class ProductValidation
             "p_images" => "required|image|mimes:png,jpg,webp",
             "p_desc" => "required|string|min:100",
             "size_chart" => "nullable|integer|exists:size_charts,id",
-            "categories" => "required|exists:categories,id"
+            "categories" => "required|exists:categories,id",
+            "attr_values" => "nullable|array|exists:attribute_values,id"
         );
         if($request->hasFile("colors")){
             $validation_rules["colors"] = "required|image|mimes:jpg,png,webp";
@@ -56,7 +57,9 @@ class ProductValidation
             "p_stock" => "nullable|integer|min:1",
             "p_images" => "required|image|mimes:png,jpg,webp",
             "p_desc" => "required|string|min:100",
-            "size_chart" => "nullable|integer|exists:size_charts,id"
+            "size_chart" => "nullable|integer|exists:size_charts,id",
+            "categories" => "required|exists:categories,id",
+            "attr_values" => "nullable|array|exists:attribute_values,id"
         );
         if($request->hasFile("colors")){
             $validation_rules["colors"] = "required|image|mimes:jpg,png,webp";

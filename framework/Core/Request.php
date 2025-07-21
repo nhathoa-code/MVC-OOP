@@ -81,6 +81,11 @@ class Request extends Base
         return $_POST;
     }
 
+    public function getData()
+    {
+        return $_GET;
+    }
+
     public function post($name)
     {
         return $_POST[$name] ?? null;

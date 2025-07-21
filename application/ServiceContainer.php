@@ -2,6 +2,7 @@
 
 use NhatHoa\Framework\Registry;
 use NhatHoa\App\Repositories\Interfaces\CategoryRepositoryInterface;
+use NhatHoa\App\Repositories\Interfaces\AttributeRepositoryInterface;
 use NhatHoa\App\Repositories\Interfaces\ProductRepositoryInterface;
 use NhatHoa\App\Repositories\Interfaces\SizeChartRepositoryInterface;
 use NhatHoa\App\Repositories\Interfaces\CouponRepositoryInterface;
@@ -14,6 +15,7 @@ use NhatHoa\App\Repositories\Interfaces\StoreRepositoryInterface;
 use NhatHoa\App\Repositories\Interfaces\CustomerRepositoryInterface;
 use NhatHoa\App\Repositories\PermissionGroupRepository;
 use NhatHoa\App\Repositories\CategoryRepository;
+use NhatHoa\App\Repositories\AttributeRepository;
 use NhatHoa\App\Repositories\CouponRepository;
 use NhatHoa\App\Repositories\CustomerRepository;
 use NhatHoa\App\Repositories\OrderRepository;
@@ -28,6 +30,10 @@ $service_container = Registry::get("service_container");
 
 $service_container->set(CategoryRepositoryInterface::class,function(){
     return new CategoryRepository();
+});
+
+$service_container->set(AttributeRepositoryInterface::class,function(){
+    return new AttributeRepository();
 });
 
 $service_container->set(ProductRepositoryInterface::class,function(){

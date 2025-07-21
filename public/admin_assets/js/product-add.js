@@ -1172,6 +1172,7 @@ $("#add-product-form").submit(function (e) {
     }
     flag = false;
   }
+
   if (is_color_variation_active && colors.length > 0) {
     for (let i = 0; i < colors.length; i++) {
       if (!colors[i].value || colors[i].value === "") {
@@ -1357,6 +1358,10 @@ $("#add-product-form").submit(function (e) {
     return;
   }
   // end validate
+  $("input.radio-attribute-value:checked").each(function () {
+    formData.append("attr_values[]", $(this).val());
+  });
+
   if (is_uploading === true) {
     return;
   }
@@ -1537,4 +1542,44 @@ $("#categories-confirm").click(function () {
     )}</span>`
   );
   $("#categoriesModal").modal("hide");
+
+  $("#overlay").css({
+    display: "flex",
+  });
+
+  $.ajax({
+    type: "GET",
+    url: `${admin_url}/category/${
+      picked_categories[picked_categories.length - 1]
+    }/attributes`,
+    success: function (response) {
+      let attributes = response.attributes;
+      if (attributes.length > 0) {
+        $("#attributes").remove();
+        let str = `<div class="row align-items-start input-row" id="attributes">
+                  <div class="col-2 input-label">
+                      Thuộc tính
+                  </div>
+                <div class="col-10">`;
+        attributes.forEach((attr) => {
+          str += `<div class="attribute">
+                  <span style="font-weight:bold" class="mr-2">${attr.name}:</span>`;
+          attr.values.forEach((value) => {
+            str += `<label><input class="radio-attribute-value" type="radio" value="${value.id}" name="attribute_${attr.id}_values"> ${value.value}</label>`;
+          });
+          str += `</div>`;
+        });
+        str += `</div></div>`;
+
+        $("#categories").parent().parent().after(str);
+      } else {
+        $("#attributes").remove();
+      }
+    },
+    error: function (xhr, status, error) {},
+  }).always(() => {
+    $("#overlay").css({
+      display: "none",
+    });
+  });
 });

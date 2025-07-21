@@ -41,7 +41,7 @@ class ClientController extends Controller
         $data['quan_ao'] = array_map(function($item){
             $item->thumbnail = getFiles("images/products/{$item->dir}/product_images")[0];
             return $item;
-        },ProductService::getProductsFromCategoryIds([14,17]));;
+        },ProductService::getProductsFromCategoryIds([14,17]));
         $top_saled_products = array_map(function($item){
             return $this->productRepository->getById($item->id);
         },$orderService->getTopSaled(10));
@@ -80,6 +80,7 @@ class ClientController extends Controller
             }else{
                 $sizes_filter = ProductService::getFilteredSizes($category_id);
                 $colors_filter = ProductService::getFilteredColors($category_id);
+                $attributes_filters = Category::first(where:array('id'=>$category_id))->getAttributes();
                 return view("client/product/collection",
                     [
                         "collection"=>$collection,
@@ -91,6 +92,7 @@ class ClientController extends Controller
                         "displayed_products"=>count($collection),
                         "sizes_filter"=>$sizes_filter,
                         "colors_filter"=>$colors_filter,
+                        "attributes_filter"=>$attributes_filters,
                         "breadcrumb" => $breadcrumb
                     ]
                 );             

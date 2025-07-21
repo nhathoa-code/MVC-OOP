@@ -468,7 +468,6 @@ if (typeof collection !== "undefined") {
       processData: false,
       contentType: false,
       success: function (response) {
-        // return console.log(response);
         loading = false;
         let left_products = total_products - page * limit;
         if (left_products <= 0) {
@@ -499,8 +498,20 @@ if (typeof collection !== "undefined") {
     });
   });
 
+  var filtering = false;
   $("#filter-form, #filter-form-mobile").on("submit", function (e) {
     e.preventDefault();
+    if (filtering == true) return;
+    const form = $(this);
+    const submitButton = $(this).find("button[type='submit']");
+    submitButton.html(`<div class="cls_loader bounce-white" style="display: flex">
+                  <div class="sk-three-bounce">
+                    <div class="sk-child sk-bounce1"></div>
+                    <div class="sk-child sk-bounce2"></div>
+                    <div class="sk-child sk-bounce3"></div>
+                  </div>
+                </div>
+              `);
     const checkedInputs = $(this).find('input[type="checkbox"]:checked');
     const params = new URLSearchParams();
     checkedInputs.each(function () {
@@ -509,13 +520,7 @@ if (typeof collection !== "undefined") {
     const query_string = decodeURIComponent(params.toString());
     const query_url = collection_url + "?" + query_string;
     history.pushState({ path: query_url }, "", query_url);
-    if ($(this).attr("id") === "filter-form-mobile") {
-      $("#slideDiv").toggleClass("slide-in slide-out");
-      $(".filter-mobile #number-check").text(
-        $('#filter-form-mobile input[type="checkbox"]:checked').length
-      );
-    }
-    filter = true;
+    filtering = true;
     $(".view-more").data("currentpage", 1);
     $.ajax({
       type: "GET",
@@ -558,6 +563,15 @@ if (typeof collection !== "undefined") {
       error: function (xhr) {
         console.log(xhr);
       },
+    }).always(function () {
+      filtering = false;
+      submitButton.html("Lọc");
+      if (form.attr("id") === "filter-form-mobile") {
+        $("#slideDiv").toggleClass("slide-in slide-out");
+        $(".filter-mobile #number-check").text(
+          $('#filter-form-mobile input[type="checkbox"]:checked').length
+        );
+      }
     });
   });
   $("#filter-mobile").on("click", function () {
@@ -1105,7 +1119,6 @@ if (typeof search !== "undefined") {
       type: "GET",
       url: urlObj.toString(),
       success: function (response) {
-        //return console.log(response);
         loading = false;
         let left_products = total_products - page * limit;
         if (left_products <= 0) {

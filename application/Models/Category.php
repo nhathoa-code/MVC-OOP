@@ -44,5 +44,16 @@ class Category extends Model
     {
         return $this->all(where:array(array("id"=>$this->id,"operator"=>"!=")));
     }
+
+    public function getAttributes()
+    {
+        $attributes = Attribute::query()
+            ->whereJsonContains('for_categories', $this->id)
+            ->get();
+        foreach($attributes as $attr){
+            $attr->values = $attr->getValues();
+        }
+        return $attributes;
+    }
 }
 
